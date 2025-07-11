@@ -1,0 +1,14 @@
+.env
+
+# Ambientes virtuais
+venv/
+__pycache__/
+
+# Arquivos de banco
+*.db
+
+# Arquivos sensíveis
+.env
+
+# Configs do editor
+.vscode/

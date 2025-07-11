@@ -1,0 +1,78 @@
+# Sistema de Recepção - IFRJ
+
+Projeto básico de API para controle de visitantes desenvolvido com FastAPI.
+
+## ⚙️ Funcionalidades
+
+- Cadastro de visitantes
+- Listagem de todos os visitantes
+- Consulta de visitante por ID
+- Edição de dados do visitante
+- Remoção de visitante
+- Validação de dados obrigatórios
+
+## 🧱 Tecnologias utilizadas
+
+- Python 3.13.5
+- FastAPI
+- SQLAlchemy
+- MySQL
+- Uvicorn
+- Pydantic
+
+## 🚀 Como executar
+
+uvicorn backend.main:app --reload
+
+### Pré-requisitos
+- Python 3.11+
+- Pip
+
+### Instalação
+
+```bash
+git clone https://github.com/seu-usuario/fastapi-recepcao.git
+cd fastapi-recepcao/backend
+pip install -r requirements.txt
+uvicorn backend.main:app --reload
+Acesse: http://127.0.0.1:8000/docs
+
+📄 Estrutura do Projeto
+bash
+Copiar
+Editar
+fastapi-recepcao/
+├── backend/
+│   ├── main.py          # Arquivo principal com as rotas
+│   ├── models.py        # Definição das tabelas
+│   ├── schemas.py       # Validação e formatos dos dados
+│   ├── crud.py          # Funções de banco de dados
+│   ├── database.py      # Configuração do banco
+├── README.md            # Documentação principal
+
+📌 Observações
+Esse projeto é um MVP (Produto Mínimo Viável) para testes e validações internas do sistema de recepção do IFRJ.
+
+
+### ✅ 2. Swagger automático (/docs)
+
+Já está funcionando! FastAPI gera a documentação **interativa** automaticamente:
+
+- Use [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) para mostrar ao seu chefe como os endpoints funcionam.
+- Você também pode ir em [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc) para uma visualização mais técnica (Redoc).
+
+---
+
+### ✅ 3. Comentários no código
+
+Adicione **comentários curtos e claros** no código para que outro desenvolvedor entenda o que está acontecendo.
+
+Exemplo:
+
+```python
+# Cria um novo visitante no banco de dados
+@app.post("/visitantes/", response_model=schemas.VisitanteOut)
+def create_visitante(visitante: schemas.VisitanteCreate, db: Session = Depends(get_db)):
+    return crud.create_visitante(db=db, visitante=visitante)
+
+
