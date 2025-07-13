@@ -31,7 +31,7 @@ uvicorn backend.main:app --reload
 ### Instalação
 
 ```bash
-git clone https://github.com/seu-usuario/fastapi-recepcao.git
+git clone https://github.com/andrielle-duarte/fastapi-recepcao.git
 cd fastapi-recepcao/backend
 pip install -r requirements.txt
 uvicorn backend.main:app --reload
@@ -52,27 +52,5 @@ fastapi-recepcao/
 
 📌 Observações
 Esse projeto é um MVP (Produto Mínimo Viável) para testes e validações internas do sistema de recepção do IFRJ.
-
-
-### ✅ 2. Swagger automático (/docs)
-
-Já está funcionando! FastAPI gera a documentação **interativa** automaticamente:
-
-- Use [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) para mostrar ao seu chefe como os endpoints funcionam.
-- Você também pode ir em [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc) para uma visualização mais técnica (Redoc).
-
----
-
-### ✅ 3. Comentários no código
-
-Adicione **comentários curtos e claros** no código para que outro desenvolvedor entenda o que está acontecendo.
-
-Exemplo:
-
-```python
-# Cria um novo visitante no banco de dados
-@app.post("/visitantes/", response_model=schemas.VisitanteOut)
-def create_visitante(visitante: schemas.VisitanteCreate, db: Session = Depends(get_db)):
-    return crud.create_visitante(db=db, visitante=visitante)
 
 

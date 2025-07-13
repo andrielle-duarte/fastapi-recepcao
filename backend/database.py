@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
+# Carrega variáveis do .env
 load_dotenv()
 
 DB_USER = os.getenv("DB_USER")
@@ -12,21 +13,25 @@ DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 DB_NAME = os.getenv("DB_NAME")
 
-if DB_PORT is None or DB_PORT.lower() == 'none':
-    port = 3306  # porta padrão MySQL
-else:
-    port = int(DB_PORT)
+# Verificação básica de obrigatoriedade
+required_vars = [DB_USER, DB_PASSWORD, DB_HOST, DB_NAME]
+if not all(required_vars):
+    raise ValueError("Uma ou mais variáveis de ambiente do banco de dados estão faltando.")
 
-SQLALCHEMY_DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{port}/{DB_NAME}"
+# Porta padrão caso não esteja definida corretamente
+DB_PORT = int(DB_PORT) if DB_PORT and DB_PORT.lower() != 'none' else 3306
 
+# String de conexão
+SQLALCHEMY_DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
+# Engine e sessão
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-
+# Base declarativa para os modelos ORM
 Base = declarative_base()
 
-# Dependency
+# Dependência para uso com FastAPI
 def get_db():
     db = SessionLocal()
     try:

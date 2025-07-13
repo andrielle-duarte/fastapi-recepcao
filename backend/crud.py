@@ -1,14 +1,15 @@
 from sqlalchemy.orm import Session
 from backend import models, schemas
 
-
-def get_visitante(db: Session, visitante_id: int):
-    return db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
-
+# Retorna todos os visitantes, com suporte a paginação (skip e limit)
 def get_visitantes(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Visitante).offset(skip).limit(limit).all()
 
+# Busca um visitante específico pelo ID
+def get_visitante(db: Session, visitante_id: int):
+    return db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
 
+# Cria e salva um novo visitante no banco de dados
 def create_visitante(db: Session, visitante: schemas.VisitanteCreate):
     db_visitante = models.Visitante(
         nome=visitante.nome,
@@ -17,20 +18,27 @@ def create_visitante(db: Session, visitante: schemas.VisitanteCreate):
         data_entrada=visitante.data_entrada,
         data_saida=visitante.data_saida,
     )
-    db.add(db_visitante)
-    db.commit()
-    db.refresh(db_visitante)
+    db.add(db_visitante)           # Adiciona à sessão do banco
+    db.commit()                    # Confirma a transação
+    db.refresh(db_visitante)      # Atualiza com os dados reais (ex: ID gerado)
     return db_visitante
 
-def edit_visitante(db: Session, request: schemas.VisitanteCreate, old_db_visitante:models.Visitante):
-    old_db_visitante.update({'nome':request.nome, 'documento':request.documento, 'motivo_visita':request.motivo_visita})
-    db.commit()
+# Atualiza os dados de um visitante existente
+def edit_visitante(db: Session, request: schemas.VisitanteCreate, old_db_visitante: models.Visitante):
+    old_db_visitante.nome = request.nome
+    old_db_visitante.documento = request.documento
+    old_db_visitante.motivo_visita = request.motivo_visita
+    old_db_visitante.data_entrada = request.data_entrada
+    old_db_visitante.data_saida = request.data_saida
+    db.commit()                    # Salva as alterações no banco
+    db.refresh(old_db_visitante)  # Garante que os dados retornados estão atualizados
+    return old_db_visitante
 
-
+# Remove um visitante do banco, se existir
 def delete_visitante(db: Session, visitante_id: int):
     visitante_db = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
     if not visitante_db:
-        return None
-    db.delete(visitante_db)
-    db.commit()
+        return None               # Se não encontrado, retorna None
+    db.delete(visitante_db)       # Remove o visitante
+    db.commit()                   # Confirma a exclusão
     return visitante_db
