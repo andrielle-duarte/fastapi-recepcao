@@ -14,7 +14,7 @@ app = FastAPI()
 # Configuração CORS para permitir chamadas do frontend em localhost:5174
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5174"],  # Ajuste para sua porta do frontend
+    allow_origins=["http://localhost:5173"],  # Ajuste para sua porta do frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -25,11 +25,9 @@ app.add_middleware(
 def root():
     return {"status": "Sistema de recepção ativo"}
 
-# Criar visitante - define data_entrada se não fornecida
+# Criar visitante 
 @app.post("/visitantes/", response_model=schemas.VisitanteOut)
 def create_visitante(visitante: schemas.VisitanteCreate, db: Session = Depends(get_db)):
-    if visitante.data_entrada is None:
-        visitante.data_entrada = datetime.now(timezone.utc)
     return crud.create_visitante(db=db, visitante=visitante)
 
 # Listar visitantes com paginação (skip)

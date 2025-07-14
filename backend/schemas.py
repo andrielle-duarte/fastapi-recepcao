@@ -30,8 +30,13 @@ class VisitanteCreate(BaseModel):
     @field_validator('data_saida')
     def data_saida_maior_entrada(cls, v, info):
         data_entrada = info.data.get('data_entrada')
-        if v and data_entrada and v < data_entrada:
-            raise ValueError('Data de saída não pode ser anterior à data de entrada')
+        if v and data_entrada:
+            if v.tzinfo:
+                v = v.replace(tzinfo=None)
+            if data_entrada.tzinfo:
+                data_entrada = data_entrada.replace(tzinfo=None)
+            if v < data_entrada:
+                raise ValueError('Data de saída não pode ser anterior à data de entrada')
         return v
 
 # Schema para saída de dados do visitante (response)
