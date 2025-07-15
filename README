@@ -54,3 +54,10 @@ fastapi-recepcao/
 Esse projeto é um MVP (Produto Mínimo Viável) para testes e validações internas do sistema de recepção do IFRJ.
 
 
+Formato do .env
+
+DB_USER=seu_usuario
+DB_PASSWORD=sua_senha
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=seu_banco
