@@ -6,15 +6,17 @@ from datetime import datetime, timezone
 from . import crud, models, schemas
 from .database import SessionLocal, engine, get_db
 
+
 # Cria as tabelas no banco de dados (se não existirem)
 models.Base.metadata.create_all(bind=engine)
+
 
 app = FastAPI()
 
 # Configuração CORS para permitir chamadas do frontend em localhost:5174
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5174"],  # Ajuste para sua porta do frontend
+    allow_origins=["http://localhost:5173"],  # Ajuste para sua porta do frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -35,7 +37,7 @@ def create_visitante(visitante: schemas.VisitanteCreate, db: Session = Depends(g
 def get_visitantes(skip: int = 0, db: Session = Depends(get_db)):
     visitantes = crud.get_visitantes(db, skip=skip)
     return visitantes
-""
+    
 # Buscar visitante por id
 @app.get("/visitantes/{visitante_id}", response_model=schemas.VisitanteOut)
 def get_visitante(visitante_id: int, db: Session = Depends(get_db)):

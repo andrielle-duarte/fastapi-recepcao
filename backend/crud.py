@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from backend import models, schemas
+from backend import models, schemas, crud
+
 
 # Retorna todos os visitantes, com suporte a paginação (skip e limit)
 def get_visitantes(db: Session, skip: int = 0, limit: int = 100):
@@ -8,6 +9,7 @@ def get_visitantes(db: Session, skip: int = 0, limit: int = 100):
 # Busca um visitante específico pelo ID
 def get_visitante(db: Session, visitante_id: int):
     return db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
+
 
 # Cria e salva um novo visitante no banco de dados
 def create_visitante(db: Session, visitante: schemas.VisitanteCreate):
