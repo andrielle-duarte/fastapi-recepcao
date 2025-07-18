@@ -2,16 +2,22 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
+from sqlalchemy import or_
 
 from . import crud, models, schemas
 from .database import SessionLocal, engine, get_db
+
+app = FastAPI()
+
+from .routers import visitas
+
+app.include_router(visitas, prefix="/api")
 
 
 # Cria as tabelas no banco de dados (se não existirem)
 models.Base.metadata.create_all(bind=engine)
 
 
-app = FastAPI()
 
 # Configuração CORS para permitir chamadas do frontend em localhost:5174
 app.add_middleware(
@@ -38,13 +44,15 @@ def get_visitantes(skip: int = 0, db: Session = Depends(get_db)):
     visitantes = crud.get_visitantes(db, skip=skip)
     return visitantes
     
-# Buscar visitante por id
-@app.get("/visitantes/{visitante_id}", response_model=schemas.VisitanteOut)
-def get_visitante(visitante_id: int, db: Session = Depends(get_db)):
-    visitante = crud.get_visitante(db, visitante_id=visitante_id)
-    if not visitante:
-        raise HTTPException(status_code=404, detail="Visitante não encontrado")
-    return visitante
+# Buscar visitante com filtro nome ou documento
+@app.get("/visitantes/buscar")
+@app.get("/visitantes/buscar")
+def buscar_visitantes(termo: str = "", db: Session = Depends(get_db)):
+    visitantes = db.query(models.Visitante).filter(
+        (models.Visitante.nome.ilike(f"%{termo}%")) |
+        (models.Visitante.documento.ilike(f"%{termo}%"))
+    ).all()
+    return visitantes
 
 # Atualizar visitante
 @app.put("/visitantes/{visitante_id}", response_model=schemas.VisitanteOut)

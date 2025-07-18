@@ -71,4 +71,4 @@ class Visita(BaseModel):
     data_saida: datetime | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
