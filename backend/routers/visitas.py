@@ -5,6 +5,9 @@ from backend.database import get_db
 
 router = APIRouter()
 
+#nao ta puxando daqui, quando colocar visitas tem que organizar
+
+
 @router.get("/visitantes/buscar", response_model=list[schemas.VisitanteOut])
 def buscar_visitantes(termo: str = Query(...), db: Session = Depends(get_db)):
     visitantes = db.query(models.Visitante).filter(
