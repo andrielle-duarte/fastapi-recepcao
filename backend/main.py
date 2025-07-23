@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
@@ -9,9 +9,9 @@ from .database import SessionLocal, engine, get_db
 
 app = FastAPI()
 
-from .routers import visitas
+#from backend.visitas import router
 
-app.include_router(visitas, prefix="/api")
+#app.include_router(router)
 
 
 # Cria as tabelas no banco de dados (se não existirem)
@@ -19,7 +19,7 @@ models.Base.metadata.create_all(bind=engine)
 
 
 
-# Configuração CORS para permitir chamadas do frontend em localhost:5174
+# Configuração CORS para permitir chamadas do frontend em localhost:5174 ou 73 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],  # Ajuste para sua porta do frontend
@@ -45,7 +45,7 @@ def get_visitantes(skip: int = 0, db: Session = Depends(get_db)):
     return visitantes
     
 # Buscar visitante com filtro nome ou documento
-@app.get("/visitantes/buscar")
+
 @app.get("/visitantes/buscar")
 def buscar_visitantes(termo: str = "", db: Session = Depends(get_db)):
     visitantes = db.query(models.Visitante).filter(
@@ -54,8 +54,8 @@ def buscar_visitantes(termo: str = "", db: Session = Depends(get_db)):
     ).all()
     return visitantes
 
-# Atualizar visitante
-@app.put("/visitantes/{visitante_id}", response_model=schemas.VisitanteOut)
+# Atualizar visitante, uso para inserir nova visita por enquando
+@app.put("/visitantes/{visitante_id}/iniciar", response_model=schemas.VisitanteOut)
 def edit_visitante(visitante_id: int, request: schemas.VisitanteCreate, db: Session = Depends(get_db)):
     visitante_db = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
     if visitante_db is None:
@@ -71,6 +71,23 @@ def edit_visitante(visitante_id: int, request: schemas.VisitanteCreate, db: Sess
     db.commit()
     db.refresh(visitante_db)
     return visitante_db
+
+
+#depois que declarei no schemas
+@app.put("/visitantes/{visitante_id}/alterarMotivo", response_model=schemas.VisitanteOut)
+def alterarMotivo(
+    visitante_id: int,
+    motivo_update: schemas.MotivoVisitaUpdate,
+    db: Session = Depends(get_db)
+):
+    visitante = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
+    if not visitante:
+        raise HTTPException(status_code=404, detail="Visitante não encontrado")
+    
+    visitante.motivo_visita = motivo_update.motivo_visita
+    db.commit()
+    db.refresh(visitante)
+    return visitante
 
 # Deletar visitante pelo id
 @app.delete("/visitantes/{visitante_id}", status_code=204)

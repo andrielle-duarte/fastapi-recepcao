@@ -26,3 +26,14 @@ def criar_visitante(visitante: schemas.VisitanteCreate, db: Session = Depends(ge
     db.commit()
     db.refresh(db_visitante)
     return db_visitante
+
+@router.put("/visitantes/{visitanteId}/alterar-motivo")
+def alterar_motivo(id: int, motivo: dict, db: Session = Depends(get_db)):
+    visitante = db.query(models.Visitante).filter(models.Visitante.id == id).first()
+    if not visitante:
+        raise HTTPException(status_code=404, detail="Visitante não encontrado")
+    
+    visitante.motivo_visita = motivo["motivo_visita"]
+    db.commit()
+    db.refresh(visitante)
+    return visitante
