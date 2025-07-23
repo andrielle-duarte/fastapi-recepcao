@@ -18,6 +18,9 @@ def criar_visita(db: Session, visita: schemas.VisitaCreate):
     db.refresh(nova_visita)
     return nova_visita
 
+def listar_visitas_por_visitante(db: Session, visitante_id: int):
+    return db.query(models.Visita).filter(models.Visita.visitante_id == visitante_id).all()
+
 def iniciar_visita(visitante_id: int, visitante_dados: schemas.VisitanteCreate, db: Session = Depends(database.get_db)):
     db_visitante = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
 

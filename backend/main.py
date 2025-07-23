@@ -6,6 +6,7 @@ from sqlalchemy import or_
 from backend import database
 from . import crud, models, schemas
 from .database import SessionLocal, engine, get_db
+from typing import List
 
 app = FastAPI()
 
@@ -33,6 +34,12 @@ app.add_middleware(
 def root():
     return {"status": "Sistema de recepção ativo"}
 
+@app.get("/visitantes/{visitante_id}/visitas", response_model=List[schemas.Visita])
+def obter_visitas_do_visitante(visitante_id: int, db: Session = Depends(get_db)):
+    visitas = crud.listar_visitas_por_visitante(db, visitante_id)
+    if not visitas:
+        raise HTTPException(status_code=404, detail="Nenhuma visita encontrada para este visitante.")
+    return visitas
 # Criar visitante 
 @app.post("/visitantes/", response_model=schemas.VisitanteOut)
 def create_visitante(visitante: schemas.VisitanteCreate, db: Session = Depends(get_db)):
@@ -44,6 +51,7 @@ def get_visitantes(skip: int = 0, db: Session = Depends(get_db)):
     visitantes = crud.get_visitantes(db, skip=skip)
     return visitantes
     
+
 # Buscar visitante com filtro nome ou documento
 @app.get("/visitantes/buscar")
 def buscar_visitantes(termo: str = "", db: Session = Depends(get_db)):

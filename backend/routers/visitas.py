@@ -40,3 +40,10 @@ def alterar_motivo(id: int, motivo: dict, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(visitante)
     return visitante
+
+@router.get("/visitas/historico/{visitante_id}", response_model=List[schemas.Visita])
+def obter_historico_de_visitas(visitante_id: int, db: Session = Depends(get_db)):
+    visitas = crud.listar_visitas_por_visitante(db, visitante_id)
+    if not visitas:
+        raise HTTPException(status_code=404, detail="Nenhuma visita encontrada para este visitante.")
+    return visitas

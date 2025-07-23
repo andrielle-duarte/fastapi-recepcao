@@ -45,7 +45,7 @@ class VisitanteOut(BaseModel):
     nome: str
     documento: str
     motivo_visita: Optional[str] = None
-    data_entrada: datetime
+    data_entrada: Optional[datetime] = None
     data_saida: Optional[datetime] = None
 
     # Validação extra para garantir documento só números (pode ajudar em outputs que passam por transformação)
