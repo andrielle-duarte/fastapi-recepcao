@@ -92,6 +92,19 @@ def alterarMotivo(
     db.refresh(visitante)
     return visitante
 
+@app.put("/visitantes/{id}/encerrar", response_model=schemas.VisitanteOut)
+def encerrar_visita(id: int, db: Session = Depends(get_db)):
+    visitante = crud.get_visitante(db, id)
+    if not visitante:
+        raise HTTPException(status_code=404, detail="Visitante não encontrado")
+    if visitante.data_saida:
+        raise HTTPException(status_code=400, detail="Visita já encerrada")
+
+    visitante.data_saida = datetime.utcnow()
+    db.commit()
+    db.refresh(visitante)
+    return visitante
+
 # Deletar visitante pelo id
 @app.delete("/visitantes/{visitante_id}", status_code=204)
 def delete_visitante(visitante_id: int, db: Session = Depends(get_db)):
