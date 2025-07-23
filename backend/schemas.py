@@ -60,6 +60,13 @@ class VisitanteOut(BaseModel):
         from_attributes = True
 
 
+class VisitanteUpdate(BaseModel):
+    nome: Optional[str]
+    documento: Optional[str]
+    motivo_visita: Optional[str]
+    data_entrada: Optional[datetime]
+    data_saida: Optional[datetime]
+
 class VisitaCreate(BaseModel):
     visitante_id: int
     data_entrada: datetime
@@ -72,3 +79,4 @@ class Visita(BaseModel):
 
     class Config:
         from_attributes = True
+

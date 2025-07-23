@@ -26,3 +26,6 @@ def criar_visitante(visitante: schemas.VisitanteCreate, db: Session = Depends(ge
     db.commit()
     db.refresh(db_visitante)
     return db_visitante
+
+
+# pelo que testei, nao ta puxando as regras daqui
