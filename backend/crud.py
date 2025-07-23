@@ -1,5 +1,6 @@
+from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
-from backend import models, schemas, crud
+from backend import database, models, schemas, crud
 
 
 # Retorna todos os visitantes, com suporte a paginação (skip e limit)
@@ -16,6 +17,23 @@ def criar_visita(db: Session, visita: schemas.VisitaCreate):
     db.commit()
     db.refresh(nova_visita)
     return nova_visita
+
+def iniciar_visita(visitante_id: int, visitante_dados: schemas.VisitanteUpdate, db: Session = Depends(database.get_db)):
+    db_visitante = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
+
+    if not db_visitante:
+        raise HTTPException(status_code=404, detail="Visitante não encontrado")
+
+    if db_visitante.data_entrada and not db_visitante.data_saida:
+        raise HTTPException(status_code=400, detail="Visita já está ativa")
+
+    db_visitante.data_entrada = visitante_dados.data_entrada
+    db_visitante.data_saida = None
+    db.commit()
+    db.refresh(db_visitante)
+
+    return db_visitante
+
 
 # Cria e salva um novo visitante no banco de dados
 def create_visitante(db: Session, visitante: schemas.VisitanteCreate):

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 from sqlalchemy import or_
-
+from backend import database
 from . import crud, models, schemas
 from .database import SessionLocal, engine, get_db
 
@@ -45,14 +45,17 @@ def get_visitantes(skip: int = 0, db: Session = Depends(get_db)):
     return visitantes
     
 # Buscar visitante com filtro nome ou documento
-
 @app.get("/visitantes/buscar")
 def buscar_visitantes(termo: str = "", db: Session = Depends(get_db)):
     visitantes = db.query(models.Visitante).filter(
         (models.Visitante.nome.ilike(f"%{termo}%")) |
         (models.Visitante.documento.ilike(f"%{termo}%"))
     ).all()
-    return visitantes
+    return visitantes   
+
+@app.put("/visitantes/{visitante_id}/iniciar", response_model=schemas.VisitanteOut)
+
+
 
 # Atualizar visitante, uso para inserir nova visita por enquando
 @app.put("/visitantes/{visitante_id}/iniciar", response_model=schemas.VisitanteOut)
