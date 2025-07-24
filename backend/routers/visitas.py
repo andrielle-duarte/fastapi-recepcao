@@ -6,29 +6,7 @@ from backend.database import get_db
 
 router = APIRouter(prefix="/visitas", tags=["Visitas"])
 
-# Buscar visitantes (com filtro por nome ou documento)
-@router.get("/visitantes/buscar", response_model=List[schemas.VisitanteOut])
-def buscar_visitantes(termo: str = Query(...), db: Session = Depends(get_db)):
-    visitantes = db.query(models.Visitante).filter(
-        (models.Visitante.nome.ilike(f"%{termo}%")) |
-        (models.Visitante.documento.ilike(f"%{termo}%"))
-    ).all()
-    return visitantes
 
-# Criar um novo visitante
-@router.post("/visitantes", response_model=schemas.VisitanteOut)
-def criar_visitante(visitante: schemas.VisitanteCreate, db: Session = Depends(get_db)):
-    db_visitante = models.Visitante(
-        nome=visitante.nome,
-        documento=visitante.documento,
-        motivo_visita=visitante.motivo_visita,
-        data_entrada=visitante.data_entrada,
-        data_saida=visitante.data_saida
-    )
-    db.add(db_visitante)
-    db.commit()
-    db.refresh(db_visitante)
-    return db_visitante
 
 # Iniciar uma nova visita (registra data_entrada, motivo, etc)
 @router.post("/", response_model=schemas.VisitaOut)
@@ -40,7 +18,7 @@ def iniciar_visita(visita: schemas.VisitaCreate, db: Session = Depends(get_db)):
 def alterar_motivo(visitante_id: int, motivo: dict, db: Session = Depends(get_db)):
     visitante = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
     if not visitante:
-        raise HTTPException(status_code=404, detail="Visitante não encontrado")
+        raise HTTPException(status_code=200, detail="Visitante não encontrado")
     
     visitante.motivo_visita = motivo.get("motivo_visita")
     db.commit()
@@ -52,7 +30,7 @@ def alterar_motivo(visitante_id: int, motivo: dict, db: Session = Depends(get_db
 def obter_historico_de_visitas(visitante_id: int, db: Session = Depends(get_db)):
     visitas = crud.listar_visitas_por_visitante(db, visitante_id)
     if not visitas:
-        raise HTTPException(status_code=404, detail="Nenhuma visita encontrada para este visitante.")
+        raise HTTPException(status_code=200, detail="Nenhuma visita encontrada para este visitante.")
     return visitas
 
 @router.get("/historico/teste")
