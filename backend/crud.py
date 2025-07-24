@@ -1,6 +1,7 @@
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend import database, models, schemas, crud
+from datetime import datetime, timezone
 
 
 # Retorna todos os visitantes, com suporte a paginação (skip e limit)
@@ -19,9 +20,10 @@ def criar_visita(db: Session, visita: schemas.VisitaCreate):
     return nova_visita
 
 def listar_visitas_por_visitante(db: Session, visitante_id: int):
-    return db.query(models.Visita).filter(models.Visita.visitante_id == visitante_id).all()
+    visitas = db.query(models.Visita).filter(models.Visita.visitante_id == visitante_id).all()
+    return visitas 
 
-def iniciar_visita(visitante_id: int, visitante_dados: schemas.VisitanteCreate, db: Session = Depends(database.get_db)):
+def iniciar_visita_existente(visitante_id: int, visitante_dados: schemas.VisitanteCreate, db: Session = Depends(database.get_db)):
     db_visitante = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
 
     if not db_visitante:
@@ -39,18 +41,16 @@ def iniciar_visita(visitante_id: int, visitante_dados: schemas.VisitanteCreate, 
 
 
 # Cria e salva um novo visitante no banco de dados
-def create_visitante(db: Session, visitante: schemas.VisitanteCreate):
-    db_visitante = models.Visitante(
-        nome=visitante.nome,
-        documento=visitante.documento,
-        motivo_visita=visitante.motivo_visita,
-        data_entrada=visitante.data_entrada,
-        data_saida=visitante.data_saida,
+def iniciar_visita(db: Session, visita: schemas.VisitaCreate):
+    nova_visita = models.Visita(
+        visitante_id=visita.visitante_id,
+        motivo_visita=visita.motivo_visita,
+        data_entrada=datetime.now(timezone.utc)
     )
-    db.add(db_visitante)           # Adiciona à sessão do banco
-    db.commit()                    # Confirma a transação
-    db.refresh(db_visitante)      # Atualiza com os dados reais (ex: ID gerado)
-    return db_visitante
+    db.add(nova_visita)
+    db.commit()
+    db.refresh(nova_visita)
+    return nova_visita
 
 # Atualiza os dados de um visitante existente
 def edit_visitante(db: Session, request: schemas.VisitanteCreate, old_db_visitante: models.Visitante):

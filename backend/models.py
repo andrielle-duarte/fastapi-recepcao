@@ -20,7 +20,9 @@ class Visita(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     visitante_id = Column(Integer, ForeignKey("visitantes.id"))
+    motivo_visita = Column(String(255), nullable=False)
     data_entrada = Column(DateTime, default=datetime.utcnow)
     data_saida = Column(DateTime, nullable=True)
 
+    visitante_id = Column(Integer, ForeignKey("visitantes.id")) 
     visitante = relationship("Visitante")

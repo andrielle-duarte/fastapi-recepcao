@@ -59,21 +59,18 @@ class VisitanteOut(BaseModel):
         # Permite que o Pydantic aceite dados vindos de objetos ORM (models SQLAlchemy)
         from_attributes = True
 
-
-class MotivoVisitaUpdate(BaseModel):
-    motivo_visita: str
-
-
 class VisitaCreate(BaseModel):
     visitante_id: int
+    motivo_visita: str
     data_entrada: datetime
-
-class Visita(BaseModel):
+    data_saida: Optional[datetime] = None
+    
+class VisitaOut(BaseModel):
     id: int
     visitante_id: int
+    motivo_visita: str
     data_entrada: datetime
-    data_saida: datetime | None = None
+    data_saida: Optional[datetime] = None
 
     class Config:
-        from_attributes = True
-
+        from_atributtes = True
