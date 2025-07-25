@@ -63,6 +63,10 @@ def encerrar_visita(id: int, db: Session = Depends(get_db)):
     db.refresh(visitante)
     return visitante
 
+#nao encerra com a data de saida 
+#navbar unico 
+#contagem de visita ao encerrar ???
+
 
 # Deletar visitante
 @router.delete("/{visitante_id}", status_code=204)

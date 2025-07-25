@@ -2,6 +2,7 @@ from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend import database, models, schemas, crud
 from datetime import datetime, timezone
+from .database import get_db
 
 
 # Retorna todos os visitantes, com suporte a paginação (skip e limit)
@@ -12,16 +13,10 @@ def get_visitantes(db: Session, skip: int = 0, limit: int = 100):
 def get_visitante(db: Session, visitante_id: int):
     return db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
 
-def criar_visita(db: Session, visita: schemas.VisitaCreate):
-    nova_visita = models.Visita(**visita.dict())
-    db.add(nova_visita)
-    db.commit()
-    db.refresh(nova_visita)
-    return nova_visita
 
-def listar_visitas_por_visitante(db: Session, visitante_id: int):
-    visitas = db.query(models.Visita).filter(models.Visita.visitante_id == visitante_id).all()
-    return visitas 
+
+def listar_visitas_por_visitante(db, visitante_id):
+    return db.query(models.Visita).filter(models.Visita.visitante_id == visitante_id).all()
 
 def iniciar_visita_existente(visitante_id: int, visitante_dados: schemas.VisitanteCreate, db: Session = Depends(database.get_db)):
     db_visitante = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
@@ -39,6 +34,19 @@ def iniciar_visita_existente(visitante_id: int, visitante_dados: schemas.Visitan
 
     return db_visitante
 
+# Cria e salva um novo visitante no banco de dados
+def create_visitante(db: Session, visitante: schemas.VisitanteCreate):
+    db_visitante = models.Visitante(
+        nome=visitante.nome,
+        documento=visitante.documento,
+        motivo_visita=visitante.motivo_visita,
+        data_entrada=visitante.data_entrada,
+        data_saida=visitante.data_saida,
+    )
+    db.add(db_visitante)           # Adiciona à sessão do banco
+    db.commit()                    # Confirma a transação
+    db.refresh(db_visitante)      # Atualiza com os dados reais (ex: ID gerado)
+    return db_visitante
 
 # Cria e salva um novo visitante no banco de dados
 def iniciar_visita(db: Session, visita: schemas.VisitaCreate):
