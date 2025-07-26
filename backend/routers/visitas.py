@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from backend import crud, models, schemas
 from backend.database import get_db
 from backend.models import Visita
-from datetime import datetime
+from datetime import datetime, timezone
 router = APIRouter(prefix="/visitas", tags=["Visitas"])
 
 
@@ -13,6 +13,11 @@ router = APIRouter(prefix="/visitas", tags=["Visitas"])
 @router.post("/", response_model=schemas.VisitaOut)
 def iniciar_visita(visita: schemas.VisitaCreate, db: Session = Depends(get_db)):
     return crud.iniciar_visita(db=db, visita=visita)
+
+@router.get("/ativas")
+def listar_visitas_ativas(db: Session = Depends(get_db)):
+    return db.query(Visita).filter(Visita.data_saida == None).all()
+
 
 # Alterar motivo da visita em andamento de um visitante
 @router.put("/visitantes/{visitante_id}/alterar-motivo", response_model=schemas.VisitanteOut)
@@ -35,15 +40,15 @@ def historico_visitas(visitante_id: int, db: Session = Depends(get_db)):
 def test_route():
     return {"message": "Rota funcionando"}
 
-@router.put("/{id}/encerrar")
-def encerrar_visita(id: int, db: Session = Depends(get_db)):
-    visita = db.query(Visita).filter(Visita.id == id).first()
+@router.put("/{visita_id}/encerrar")
+def encerrar_visita(visita_id: int, db: Session = Depends(get_db)):
+    visita = db.query(Visita).filter(Visita.id == visita_id).first()
     if not visita:
         raise HTTPException(status_code=404, detail="Visita não encontrada")
-    
-    visita.data_saida = datetime.now()
-    print(f"Encerrando visita {visita.id} com data de saída {visita.data_saida}")  # Debug
-    
+    if visita.data_saida:
+        raise HTTPException(status_code=400, detail="Visita já encerrada")
+
+    visita.data_saida = datetime.now(timezone.utc)
     db.commit()
     db.refresh(visita)
     return visita
