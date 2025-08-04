@@ -73,4 +73,4 @@ class VisitaOut(BaseModel):
     data_saida: Optional[datetime] = None
 
     class Config:
-        from_atributtes = True
+        from_atributes = True

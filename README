@@ -19,6 +19,7 @@ Projeto básico de API para controle de visitantes desenvolvido com FastAPI.
 - MySQL
 - Uvicorn
 - Pydantic
+- Dotenv
 
 ## 🚀 Como executar
 
