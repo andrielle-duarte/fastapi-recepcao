@@ -36,17 +36,14 @@ def alterar_motivo(visitante_id: int, motivo: dict, db: Session = Depends(get_db
 def historico_visitas(visitante_id: int, db: Session = Depends(get_db)):
     return db.query(models.Visita).filter(models.Visita.visitante_id == visitante_id).all()
 
-@router.get("/historico/teste")
-def test_route():
-    return {"message": "Rota funcionando"}
 
 @router.put("/{visita_id}/encerrar")
 def encerrar_visita(visita_id: int, db: Session = Depends(get_db)):
     visita = db.query(Visita).filter(Visita.id == visita_id).first()
     if not visita:
-        raise HTTPException(status_code=404, detail="Visita não encontrada")
+        raise HTTPException(status_code=200, detail="Visita não encontrada")
     if visita.data_saida:
-        raise HTTPException(status_code=400, detail="Visita já encerrada")
+        raise HTTPException(status_code=200, detail="Visita já encerrada")
 
     visita.data_saida = datetime.now(timezone.utc)
     db.commit()
