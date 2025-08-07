@@ -2,6 +2,7 @@ from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend import database, models, schemas, crud
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from .database import get_db
 
 
@@ -22,10 +23,10 @@ def iniciar_visita_existente(visitante_id: int, visitante_dados: schemas.Visitan
     db_visitante = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
 
     if not db_visitante:
-        raise HTTPException(status_code=404, detail="Visitante não encontrado")
+        raise HTTPException(status_code=200, detail="Visitante não encontrado")
 
     if db_visitante.data_entrada and not db_visitante.data_saida:
-        raise HTTPException(status_code=400, detail="Visita já está ativa")
+        raise HTTPException(status_code=200, detail="Visita já está ativa")
 
     db_visitante.data_entrada = visitante_dados.data_entrada
     db_visitante.data_saida = None
@@ -40,12 +41,12 @@ def create_visitante(db: Session, visitante: schemas.VisitanteCreate):
         nome=visitante.nome,
         documento=visitante.documento,
         motivo_visita=visitante.motivo_visita,
-        data_entrada=visitante.data_entrada,
+        data_entrada=datetime.now(timezone.utc).replace(tzinfo=ZoneInfo("America/Sao_Paulo")),
         data_saida=visitante.data_saida,
     )
-    db.add(db_visitante)           # Adiciona à sessão do banco
-    db.commit()                    # Confirma a transação
-    db.refresh(db_visitante)      # Atualiza com os dados reais (ex: ID gerado)
+    db.add(db_visitante)
+    db.commit()
+    db.refresh(db_visitante)
     return db_visitante
 
 # Cria e salva um novo visitante no banco de dados
