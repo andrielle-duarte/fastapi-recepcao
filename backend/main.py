@@ -25,7 +25,7 @@ models.Base.metadata.create_all(bind=engine)
 # Configuração CORS para permitir chamadas do frontend em localhost:5174 ou 73 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Ajuste para sua porta do frontend  http://localhost:5173
+    allow_origins=["http://localhost:5173"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

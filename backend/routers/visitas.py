@@ -14,10 +14,13 @@ router = APIRouter(prefix="/visitas", tags=["Visitas"])
 def iniciar_visita(visita: schemas.VisitaCreate, db: Session = Depends(get_db)):
     return crud.iniciar_visita(db=db, visita=visita)
 
-@router.get("/ativas")
+@router.get("/ativas", response_model=List[schemas.VisitaOut])
 def listar_visitas_ativas(db: Session = Depends(get_db)):
-    return db.query(Visita).filter(Visita.data_saida == None).all()
-
+    visitas_ativas = db.query(models.Visita).filter(models.Visita.data_saida == None).all()
+    # Força o carregamento do relacionamento visitante para evitar lazy loading fora do escopo
+    for visita in visitas_ativas:
+        visita.visitante  # acessa para carregar
+    return visitas_ativas
 
 # Alterar motivo da visita em andamento de um visitante
 @router.put("/visitantes/{visitante_id}/alterar-motivo", response_model=schemas.VisitanteOut)
