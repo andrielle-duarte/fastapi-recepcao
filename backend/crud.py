@@ -23,14 +23,13 @@ def listar_visitas_por_visitante(db, visitante_id):
 
 
 def create_visitante(db: Session, visitante: schemas.VisitanteCreate):
-    # Se visitante.data_entrada existir no schema, pode usar, senão deixe o default do modelo agir
     data_entrada = visitante.data_entrada or None
     
     db_visitante = models.Visitante(
         nome=visitante.nome,
         documento=visitante.documento,
         motivo_visita=visitante.motivo_visita,
-        data_entrada=data_entrada,  # None deixa o default agir
+        data_entrada=data_entrada,  
         data_saida=visitante.data_saida,
     )
     db.add(db_visitante)
