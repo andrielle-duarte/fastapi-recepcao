@@ -2,7 +2,7 @@
 
 Projeto básico de API para controle de visitantes desenvolvido com FastAPI.
 
-## ⚙️ Funcionalidades
+## Funcionalidades
 
 - Cadastro de visitantes
 - Listagem de todos os visitantes
@@ -11,7 +11,7 @@ Projeto básico de API para controle de visitantes desenvolvido com FastAPI.
 - Remoção de visitante
 - Validação de dados obrigatórios
 
-## 🧱 Tecnologias utilizadas
+## Tecnologias utilizadas
 
 - Python 3.13.5
 - FastAPI
@@ -21,7 +21,9 @@ Projeto básico de API para controle de visitantes desenvolvido com FastAPI.
 - Pydantic
 - Dotenv
 
-## 🚀 Como executar
+Pacote TZDATA ####Não esqueça 
+
+##Como executar
 
 uvicorn backend.main:app --reload
 
@@ -49,7 +51,7 @@ fastapi-recepcao/
 │   ├── database.py      # Configuração do banco
 ├── README.md            # Documentação principal
 
-📌 Observações
+ Observações
 Esse projeto é um MVP (Produto Mínimo Viável) para testes e validações internas do sistema de recepção do IFRJ.
 
 

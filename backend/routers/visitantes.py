@@ -32,13 +32,6 @@ def buscar_visitantes(termo: str = "", db: Session = Depends(get_db)):
 
 
 
-
-
-#nao encerra com a data de saida 
-#navbar unico 
-#contagem de visita ao encerrar ???
-
-
 # Deletar visitante
 @router.delete("/{visitante_id}", status_code=204)
 def delete_visitante(visitante_id: int, db: Session = Depends(get_db)):
