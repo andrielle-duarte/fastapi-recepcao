@@ -38,16 +38,34 @@ def create_visitante(db: Session, visitante: schemas.VisitanteCreate):
     return db_visitante
 
 
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy import and_
+from backend import models, schemas
+
 def iniciar_visita(db: Session, visita: schemas.VisitaCreate):
+    
+    visita_ativa = db.query(models.Visita).filter(
+        and_(
+            models.Visita.visitante_id == visita.visitante_id,
+            models.Visita.data_saida == None  
+        )
+    ).first()
+
+    if visita_ativa:
+        raise HTTPException(status_code=400, detail=f"{visita_ativa.visitante.nome} já possui visita ativa 👍")
+
+
+    
     nova_visita = models.Visita(
         visitante_id=visita.visitante_id,
         motivo_visita=visita.motivo_visita,
-        
     )
     db.add(nova_visita)
     db.commit()
     db.refresh(nova_visita)
     return nova_visita
+
 
 
 def iniciar_visita_existente(db: Session, visitante_id: int, visitante_dados: schemas.VisitanteCreate):
