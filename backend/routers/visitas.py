@@ -16,10 +16,12 @@ def iniciar_visita(visita: schemas.VisitaCreate, db: Session = Depends(get_db)):
 
 @router.get("/ativas", response_model=List[schemas.VisitaOut])
 def listar_visitas_ativas(db: Session = Depends(get_db)):
-    visitas_ativas = db.query(models.Visita).filter(models.Visita.data_saida == None).all()
-    # Força o carregamento do relacionamento visitante para evitar lazy loading fora do escopo
+    visitas_ativas = db.query(models.Visita).filter(
+        models.Visita.data_saida == None,
+        models.Visita.visitante_id != None
+        ).all()
     for visita in visitas_ativas:
-        visita.visitante  # acessa para carregar
+        visita.visitante  
     return visitas_ativas
 
 # Alterar motivo da visita em andamento de um visitante

@@ -13,7 +13,7 @@ class Visitante(Base):
 
     id = Column(Integer, primary_key=True)
     nome = Column(String(100), nullable=False)
-    documento = Column(String(20), nullable=False)
+    documento = Column(String(20), nullable=False, unique=True)
     motivo_visita = Column(String(255), nullable=False)
     data_entrada = Column(DateTime(timezone=True), default=now_brasilia)
     data_saida = Column(DateTime(timezone=True), nullable=True)

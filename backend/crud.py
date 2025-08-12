@@ -1,6 +1,8 @@
-from fastapi import  HTTPException
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import and_, or_
 from backend import models, schemas
+
 
 # Retorna todos os visitantes, com suporte a paginação (skip e limit)
 def get_visitantes(db: Session, skip: int = 0, limit: int = 100):
@@ -18,14 +20,23 @@ def listar_visitas_por_visitante(db, visitante_id):
 
 
 
+
 def create_visitante(db: Session, visitante: schemas.VisitanteCreate):
-    data_entrada = visitante.data_entrada or None
+    visitante_existente = db.query(models.Visitante).filter(
+        or_(
+            models.Visitante.documento == visitante.documento,
+            models.Visitante.nome == visitante.nome
+        )
+    ).first()
+    
+    if visitante_existente:
+        raise HTTPException(status_code=400, detail="Visitante com este nome ou documento já existe.")
     
     db_visitante = models.Visitante(
         nome=visitante.nome,
         documento=visitante.documento,
         motivo_visita=visitante.motivo_visita,
-        data_entrada=data_entrada,  
+        data_entrada=visitante.data_entrada or None,
         data_saida=visitante.data_saida,
     )
     db.add(db_visitante)
@@ -33,11 +44,6 @@ def create_visitante(db: Session, visitante: schemas.VisitanteCreate):
     db.refresh(db_visitante)
     return db_visitante
 
-
-from fastapi import HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
-from backend import models, schemas
 
 def iniciar_visita(db: Session, visita: schemas.VisitaCreate):
     
@@ -64,23 +70,7 @@ def iniciar_visita(db: Session, visita: schemas.VisitaCreate):
 
 
 
-def iniciar_visita_existente(db: Session, visitante_id: int, visitante_dados: schemas.VisitanteCreate):
-    db_visitante = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
 
-    if not db_visitante:
-        raise HTTPException(status_code=404, detail="Visitante não encontrado")
-
-    if db_visitante.data_entrada and not db_visitante.data_saida:
-        raise HTTPException(status_code=400, detail="Visita já está ativa")
-
-    # Atualiza data_entrada e reseta data_saida
-    db_visitante.data_entrada = visitante_dados.data_entrada or models.now_brasilia()
-    db_visitante.data_saida = None
-
-    db.commit()
-    db.refresh(db_visitante)
-
-    return db_visitante
 
 
 # Atualiza os dados de um visitante existente
