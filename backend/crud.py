@@ -1,10 +1,6 @@
 from fastapi import  HTTPException
 from sqlalchemy.orm import Session
-from backend import database, models, schemas, crud
-from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
-from .database import get_db
-
+from backend import models, schemas
 
 # Retorna todos os visitantes, com suporte a paginação (skip e limit)
 def get_visitantes(db: Session, skip: int = 0, limit: int = 100):

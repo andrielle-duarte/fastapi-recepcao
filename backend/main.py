@@ -1,16 +1,20 @@
-from fastapi import Depends, FastAPI, HTTPException, APIRouter
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from datetime import datetime, timezone
-from sqlalchemy import or_
-from backend import database
 from backend.routers.visitas import router as visitas_router
 from backend.routers.visitantes import router as visitantes_router
-from . import crud, models, schemas
-from .database import SessionLocal, engine, get_db
-from typing import List
+from . import  models
+from .database import engine
+import logging
 
 app = FastAPI()
+
+logging.basicConfig(
+    filename="app.log",
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+)
+
+logger = logging.getLogger(__name__)
 
 
 app.include_router(visitas_router)
