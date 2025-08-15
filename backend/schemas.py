@@ -1,6 +1,9 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 from datetime import datetime
 from typing import Optional
+
+
+# Entrada Visitante
 
 class VisitanteCreate(BaseModel):
     nome: str
@@ -15,20 +18,33 @@ class VisitanteCreate(BaseModel):
             raise ValueError('Nome não pode ser vazio')
         return v
 
-    @field_validator('data_saida')
-    def data_saida_maior_entrada(cls, v, info):
-        data_entrada = info.data.get('data_entrada')
-        if v and data_entrada:
-            if v.tzinfo:
-                v = v.replace(tzinfo=None)
-            if data_entrada.tzinfo:
-                data_entrada = data_entrada.replace(tzinfo=None)
-            if v < data_entrada:
-                raise ValueError('Data de saída não pode ser anterior à data de entrada')
+    @field_validator('documento')
+    def documento_valido(cls, v):
+        if not v or not v.strip():
+            raise ValueError('Documento não pode ser vazio')
         return v
-    
+
+    @field_validator('motivo_visita')
+    def motivo_valido(cls, v):
+        if not v or not v.strip():
+            raise ValueError('Motivo da visita não pode ser vazio')
+        if len(v) > 255:
+            raise ValueError('Motivo muito grande (máx. 255 caracteres)')
+        return v
+
+    @model_validator(mode="before")
+    def validar_datas(cls, values):
+        data_entrada = values.get('data_entrada')
+        data_saida = values.get('data_saida')
+        if data_entrada and data_saida:
+            de = data_entrada.replace(tzinfo=None) if data_entrada.tzinfo else data_entrada
+            ds = data_saida.replace(tzinfo=None) if data_saida.tzinfo else data_saida
+            if ds < de:
+                raise ValueError('Data de saída não pode ser anterior à data de entrada')
+        return values
 
 
+# Saída Visitante
 
 class VisitanteOut(BaseModel):
     id: int
@@ -44,6 +60,11 @@ class VisitanteOut(BaseModel):
             return v[:3] + "****" + v[-2:]
         return v
 
+    class Config:
+        from_attributes = True
+
+
+# Entrada Visita
 
 class VisitaCreate(BaseModel):
     visitante_id: int
@@ -51,6 +72,8 @@ class VisitaCreate(BaseModel):
     data_entrada: Optional[datetime] = None
     data_saida: Optional[datetime] = None
 
+
+# Saída Visita
 
 class VisitaOut(BaseModel):
     id: int

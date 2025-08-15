@@ -16,9 +16,8 @@ def create_visitante(visitante: schemas.VisitanteCreate, db: Session = Depends(g
 
 # Listar visitantes com paginação
 @router.get("/", response_model=List[schemas.VisitanteOut])
-def get_visitantes(skip: int = 0, db: Session = Depends(get_db)):
-    visitantes = crud.get_visitantes(db, skip=skip)
-    return visitantes
+def get_visitantes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_visitantes(db=db, skip=skip, limit=limit)
 
 
 # Buscar visitante por nome ou documento
@@ -37,7 +36,8 @@ def buscar_visitantes(termo: str = "", db: Session = Depends(get_db)):
 def delete_visitante(visitante_id: int, db: Session = Depends(get_db)):
     visitante_db = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
     if not visitante_db:
-        raise HTTPException(status_code=200, detail="Visitante não encontrado")
+        raise HTTPException(status_code=404, detail="Visitante não encontrado")
     db.delete(visitante_db)
     db.commit()
+    return
  

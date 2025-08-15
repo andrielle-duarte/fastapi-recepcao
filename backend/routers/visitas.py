@@ -4,8 +4,12 @@ from sqlalchemy.orm import Session
 from backend import crud, models, schemas
 from backend.database import get_db
 from backend.models import Visita
-from datetime import datetime, timezone
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 router = APIRouter(prefix="/visitas", tags=["Visitas"])
+def now_brasilia():
+    return datetime.now(ZoneInfo("America/Sao_Paulo"))
 
 
 
@@ -50,7 +54,7 @@ def encerrar_visita(visita_id: int, db: Session = Depends(get_db)):
     if visita.data_saida:
         raise HTTPException(status_code=200, detail="Visita já encerrada")
 
-    visita.data_saida = datetime.now(timezone.utc)
+    visita.data_saida = now_brasilia() 
     db.commit()
     db.refresh(visita)
     return visita

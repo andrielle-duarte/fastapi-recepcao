@@ -1,4 +1,5 @@
 import os
+import re
 from urllib.parse import quote_plus
 from pathlib import Path
 from sqlalchemy import create_engine
@@ -18,7 +19,7 @@ DB_NAME = os.getenv("DB_NAME", "").strip()
 #Pra nao aatrapalhar com senhas com caracteres especiais 
 escaped_password = quote_plus(DB_PASSWORD)
 
-# Verificação básica de obrigatoriedade
+# Verificação  obrigatoria
 required_vars = [DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME]
 if not all(required_vars):
     raise ValueError("Uma ou mais variáveis de ambiente do banco de dados estão faltando.")
@@ -26,8 +27,16 @@ if not all(required_vars):
 # Porta padrão caso não esteja definida corretamente
 DB_PORT = int(DB_PORT) if DB_PORT and DB_PORT.lower() != 'none' else 3306
 
+#Função pra mascarar a senha na url de conexão com banco de dados
+def _mask_password(url: str) -> str:
+    """Mascarar a senha em uma URL de conexão para logs."""
+    return re.sub(r"(://[^:]+:)([^@]+)(@)", r"\1***\3", url)
 # String de conexão
 SQLALCHEMY_DATABASE_URL = f"mysql+pymysql://{DB_USER}:{escaped_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+print("Conectando ao banco:", _mask_password(SQLALCHEMY_DATABASE_URL))
+
+
+
 
 # Engine e sessão
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
