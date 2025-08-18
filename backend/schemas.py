@@ -10,7 +10,7 @@ class VisitanteCreate(BaseModel):
     documento: str
     motivo_visita: str
     data_entrada: Optional[datetime] = None
-    data_saida: Optional[datetime] = None
+ 
 
     @field_validator('nome')
     def nome_nao_vazio(cls, v):
@@ -52,7 +52,7 @@ class VisitanteOut(BaseModel):
     documento: Optional[str] = None
     motivo_visita: Optional[str] = None
     data_entrada: Optional[datetime] = None
-    data_saida: Optional[datetime] = None
+    
 
     @field_validator('documento', mode='before')
     def mascarar_documento(cls, v):

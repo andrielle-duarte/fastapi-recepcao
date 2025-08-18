@@ -19,21 +19,24 @@ def create_visitante(db: Session, visitante: schemas.VisitanteCreate):
             models.Visitante.nome == visitante.nome
         )
     ).first()
-    
+
     if visitante_existente:
-        raise HTTPException(status_code=400, detail="Visitante com este nome ou documento já existe.")
-    
+        if visitante_existente.documento == visitante.documento:
+            raise HTTPException(status_code=400, detail="Visitante com este documento já existe.")
+        if visitante_existente.nome == visitante.nome:
+            raise HTTPException(status_code=400, detail="Visitante com este nome já existe.")
+
     db_visitante = models.Visitante(
-        nome=visitante.nome,
-        documento=visitante.documento,
+        nome=visitante.nome.strip(),
+        documento=visitante.documento.strip(),
         motivo_visita=visitante.motivo_visita,
         data_entrada=visitante.data_entrada or None,
-        data_saida=visitante.data_saida,
     )
     db.add(db_visitante)
     db.commit()
     db.refresh(db_visitante)
     return db_visitante
+
 
 def edit_visitante(db: Session, request: schemas.VisitanteCreate, old_db_visitante: models.Visitante):
     old_db_visitante.nome = request.nome
@@ -55,6 +58,9 @@ def delete_visitante(db: Session, visitante_id: int):
 
 
 # Visita
+
+def get_visitas(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Visita).offset(skip).limit(limit).all()
 
 def listar_visitas_por_visitante(db: Session, visitante_id: int):
     return db.query(models.Visita).filter(models.Visita.visitante_id == visitante_id).all()

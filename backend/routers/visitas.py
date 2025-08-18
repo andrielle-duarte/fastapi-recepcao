@@ -28,6 +28,20 @@ def listar_visitas_ativas(db: Session = Depends(get_db)):
         visita.visitante  
     return visitas_ativas
 
+# Histórico de todas as visitas, futuramente aplicar filtro por data 
+@router.get("/historico/", response_model=List[schemas.VisitaOut])
+def get_visitas(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    visitas = crud.get_visitas(db=db, skip=skip, limit=limit)
+    if not visitas:
+        raise HTTPException(status_code=404, detail="Nenhuma visita encontrada")
+    return visitas
+
+# Obter histórico de visitas de um visitante
+@router.get("/historico/{visitante_id}", response_model=List[schemas.VisitaOut])
+def historico_visitante(visitante_id: int, db: Session = Depends(get_db)):
+    return db.query(models.Visita).filter(models.Visita.visitante_id == visitante_id).all()
+
+
 # Alterar motivo da visita em andamento de um visitante
 @router.put("/visitantes/{visitante_id}/alterar-motivo", response_model=schemas.VisitanteOut)
 def alterar_motivo(visitante_id: int, motivo: dict, db: Session = Depends(get_db)):
@@ -39,12 +53,6 @@ def alterar_motivo(visitante_id: int, motivo: dict, db: Session = Depends(get_db
     db.commit()
     db.refresh(visitante)
     return visitante
-
-# Obter histórico de visitas de um visitante
-@router.get("/historico/{visitante_id}", response_model=List[schemas.VisitaOut])
-def historico_visitas(visitante_id: int, db: Session = Depends(get_db)):
-    return db.query(models.Visita).filter(models.Visita.visitante_id == visitante_id).all()
-
 
 @router.put("/{visita_id}/encerrar")
 def encerrar_visita(visita_id: int, db: Session = Depends(get_db)):

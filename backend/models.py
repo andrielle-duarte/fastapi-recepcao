@@ -15,7 +15,7 @@ class Visitante(Base):
     documento = Column(String(20), nullable=False, unique=True, index=True)
     motivo_visita = Column(String(255), nullable=False, index=True)
     data_entrada = Column(DateTime(timezone=True), default=now_brasilia)
-    data_saida = Column(DateTime(timezone=True), nullable=True)
+  
 
     visitas = relationship(
         "Visita",
