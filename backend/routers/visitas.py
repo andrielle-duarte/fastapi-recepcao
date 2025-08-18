@@ -5,6 +5,7 @@ from backend import crud, models, schemas
 from backend.database import get_db
 from backend.models import Visita
 from datetime import datetime
+from ..database import get_db
 from zoneinfo import ZoneInfo
 
 router = APIRouter(prefix="/visitas", tags=["Visitas"])
@@ -29,12 +30,23 @@ def listar_visitas_ativas(db: Session = Depends(get_db)):
     return visitas_ativas
 
 # Histórico de todas as visitas, futuramente aplicar filtro por data 
-@router.get("/historico/", response_model=List[schemas.VisitaOut])
-def get_visitas(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    visitas = crud.get_visitas(db=db, skip=skip, limit=limit)
-    if not visitas:
-        raise HTTPException(status_code=404, detail="Nenhuma visita encontrada")
-    return visitas
+@router.get("/historico/")
+def get_historico(db: Session = Depends(get_db)):
+    visitas = db.query(models.Visita).all()
+    resultado = []
+
+    for v in visitas:
+        visitante = db.query(models.Visitante).filter(models.Visitante.id == v.visitante_id).first()
+        resultado.append({
+            "id": v.id,
+            "motivo_visita": v.motivo_visita,
+            "data_entrada": v.data_entrada,
+            "data_saida": v.data_saida,
+            "nome": visitante.nome if visitante else "",
+            "documento": visitante.documento if visitante else ""
+        })
+
+    return resultado
 
 # Obter histórico de visitas de um visitante
 @router.get("/historico/{visitante_id}", response_model=List[schemas.VisitaOut])
