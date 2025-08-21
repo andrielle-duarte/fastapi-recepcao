@@ -17,10 +17,16 @@ def now_brasilia():
 # Iniciar uma nova visita (registra data_entrada, motivo, etc)
 @router.post("/", response_model=schemas.VisitaOut)
 def iniciar_visita(visita: schemas.VisitaCreate, db: Session = Depends(get_db)):
+    """
+    Rota para iniciar visita.
+    """
     return crud.iniciar_visita(db=db, visita=visita)
 
 @router.get("/ativas", response_model=List[schemas.VisitaOut])
 def listar_visitas_ativas(db: Session = Depends(get_db)):
+    """
+    Rota para listar visitas ativas .
+    """
     visitas_ativas = db.query(models.Visita).filter(
         models.Visita.data_saida == None,
         models.Visita.visitante_id != None
@@ -32,6 +38,9 @@ def listar_visitas_ativas(db: Session = Depends(get_db)):
 # Histórico de todas as visitas, futuramente aplicar filtro por data 
 @router.get("/historico/")
 def get_historico(db: Session = Depends(get_db)):
+    """
+    Roata para listar todas as visitas e filtra-las por datas .
+    """
     visitas = db.query(models.Visita).all()
     resultado = []
 
@@ -51,12 +60,18 @@ def get_historico(db: Session = Depends(get_db)):
 # Obter histórico de visitas de um visitante
 @router.get("/historico/{visitante_id}", response_model=List[schemas.VisitaOut])
 def historico_visitante(visitante_id: int, db: Session = Depends(get_db)):
+    """
+    Rota para retornar o histórico de um visitante por id.
+    """
     return db.query(models.Visita).filter(models.Visita.visitante_id == visitante_id).all()
 
 
 # Alterar motivo da visita em andamento de um visitante
 @router.put("/visitantes/{visitante_id}/alterar-motivo", response_model=schemas.VisitanteOut)
 def alterar_motivo(visitante_id: int, motivo: dict, db: Session = Depends(get_db)):
+    """
+    Rota para alterar motivo da visita ao reinicia-la.
+    """
     visitante = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
     if not visitante:
         raise HTTPException(status_code=200, detail="Visitante não encontrado")
@@ -68,6 +83,9 @@ def alterar_motivo(visitante_id: int, motivo: dict, db: Session = Depends(get_db
 
 @router.put("/{visita_id}/encerrar")
 def encerrar_visita(visita_id: int, db: Session = Depends(get_db)):
+    """
+    Rota para encerrar visita.
+    """
     visita = db.query(Visita).filter(Visita.id == visita_id).first()
     if not visita:
         raise HTTPException(status_code=200, detail="Visita não encontrada")
