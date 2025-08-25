@@ -11,7 +11,7 @@ class VisitanteCreate(BaseModel):
     documento: str
     motivo_visita: str
     data_entrada: Optional[datetime] = None
- 
+    
 
     @field_validator('nome')
     def nome_nao_vazio(cls, v):
@@ -92,6 +92,7 @@ class VisitaOut(BaseModel):
 class RecepcionistaBase(BaseModel):
     nome: str
     email: EmailStr
+    admin: bool = False
 
 class RecepcionistaCreate(RecepcionistaBase):
     senha: str

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from backend import crud, models, schemas
 from backend.database import get_db
 from backend.routers.auth import verificar_token
+from backend.models import Recepcionista
 
 
 router = APIRouter(prefix="/visitantes", tags=["Visitantes"], dependencies = [Depends(verificar_token)])
@@ -43,10 +44,12 @@ def buscar_visitantes(termo: str = "", db: Session = Depends(get_db)):
 
 # Deletar visitante
 @router.delete("/{visitante_id}", status_code=204)
-def delete_visitante(visitante_id: int, db: Session = Depends(get_db)):
+def delete_visitante(visitante_id: int, db: Session = Depends(get_db), recepcionista: Recepcionista = Depends(verificar_token)):
     """
     Rota para deletar um visitante.
     """
+    if not recepcionista.admin:
+        raise HTTPException(status_code=401, detail="Você não tem autorização para fazer essa operação")
     visitante_db = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
     if not visitante_db:
         raise HTTPException(status_code=404, detail="Visitante não encontrado")

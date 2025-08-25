@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
@@ -15,7 +15,7 @@ class Visitante(Base):
     documento = Column(String(20), nullable=False, unique=True, index=True)
     motivo_visita = Column(String(255), nullable=False, index=True)
     data_entrada = Column(DateTime(timezone=True), default=now_brasilia)
-  
+    
 
     visitas = relationship(
         "Visita",
@@ -46,4 +46,4 @@ class Recepcionista(Base):
     nome = Column(String(100), nullable=False, index=True)
     email = Column(String(100), nullable=False, unique=True, index=True)
     senha = Column(String(100), nullable=False)
-
+    admin = Column("admin", Boolean, default=False)

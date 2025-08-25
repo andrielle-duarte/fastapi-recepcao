@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta, timezone
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
-from backend import schemas
+from backend import crud, schemas
 from backend.core.security import bcrypt_context, oauth2_schema, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
 from sqlalchemy.orm import Session
 from backend.database import get_db
 from jose import jwt, JWTError
-
 from backend.models import Recepcionista
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -48,12 +48,16 @@ async def autenticar():
     
     return {"mensagem":"Você acessou a rota padrão de autenticação", "autenticado": False}
 
+
 @router.post("/criar_conta", response_model=schemas.RecepcionistaOut)
-def criar_conta(dados: schemas.RecepcionistaCreate, db: Session = Depends(get_db)):
+async def criar_conta(dados: schemas.RecepcionistaCreate, db: Session = Depends(get_db), recepcionista: Recepcionista = Depends(verificar_token)):
+    if not recepcionista.admin:
+        raise HTTPException(status_code=401, detail="Você não pode criar um novo recepcionista sem ser adminitrador.")
     novo_recepcionista = Recepcionista(
         nome=dados.nome,
         email=dados.email,
-        senha=bcrypt_context.hash(dados.senha)
+        senha=bcrypt_context.hash(dados.senha),
+        admin=dados.admin
     )
     db.add(novo_recepcionista)
     db.commit()
