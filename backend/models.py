@@ -37,3 +37,13 @@ class Visita(Base):
         back_populates="visitas",
         lazy="selectin"
     )
+
+
+class Recepcionista(Base):
+    __tablename__="recepcionista"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String(100), nullable=False, index=True)
+    email = Column(String(100), nullable=False, unique=True, index=True)
+    senha = Column(String(100), nullable=False)
+

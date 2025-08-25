@@ -1,6 +1,7 @@
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, field_validator, model_validator, EmailStr
 from datetime import datetime
 from typing import Optional
+
 
 
 # Entrada Visitante
@@ -84,4 +85,23 @@ class VisitaOut(BaseModel):
     visitante: Optional[VisitanteOut] = None
 
     class Config:
+        from_attributes = True
+
+
+
+class RecepcionistaBase(BaseModel):
+    nome: str
+    email: EmailStr
+
+class RecepcionistaCreate(RecepcionistaBase):
+    senha: str
+
+class RecepcionistaOut(RecepcionistaBase):
+    id: int
+
+class Login(BaseModel):
+    email: str
+    senha: str
+
+    class Config: 
         from_attributes = True
