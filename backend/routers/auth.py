@@ -13,7 +13,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 def verificar_token(token: str = Depends(oauth2_schema), session: Session = Depends(get_db)):
     try:
-        dic_info = jwt.decode(token, SECRET_KEY, ALGORITHM)
+        dic_info = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         id_recepcionista = int(dic_info.get("id"))
     except JWTError:
         raise HTTPException(status_code=401, detail="Acesso Negado, verifique a validade do token")

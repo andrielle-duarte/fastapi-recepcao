@@ -43,7 +43,7 @@ def buscar_visitantes(termo: str = "", db: Session = Depends(get_db)):
 
 
 # Deletar visitante
-@router.delete("/{visitante_id}", status_code=204)
+@router.delete("/{visitante_id}")
 def delete_visitante(visitante_id: int, db: Session = Depends(get_db), recepcionista: Recepcionista = Depends(verificar_token)):
     """
     Rota para deletar um visitante.
@@ -55,5 +55,5 @@ def delete_visitante(visitante_id: int, db: Session = Depends(get_db), recepcion
         raise HTTPException(status_code=404, detail="Visitante não encontrado")
     db.delete(visitante_db)
     db.commit()
-    return
+    return {"mensagem": f"Visitante deletado com sucesso. ID do visitante: {visitante_id}"}
  

@@ -20,14 +20,16 @@ class Visitante(Base):
     visitas = relationship(
         "Visita",
         back_populates="visitante",
-        lazy="selectin" 
+        lazy="selectin",
+        cascade="all, delete-orphan",
+        passive_deletes=True           
     )
 
 class Visita(Base):
     __tablename__ = "visitas"
 
     id = Column(Integer, primary_key=True, index=True)
-    visitante_id = Column(Integer, ForeignKey("visitantes.id"), nullable=False, index=True)
+    visitante_id = Column(Integer, ForeignKey("visitantes.id", ondelete="CASCADE"), nullable=False, index=True)
     motivo_visita = Column(String(255), nullable=False, index=True)
     data_entrada = Column(DateTime(timezone=True), default=now_brasilia)
     data_saida = Column(DateTime(timezone=True), nullable=True)
@@ -35,7 +37,8 @@ class Visita(Base):
     visitante = relationship(
         "Visitante",
         back_populates="visitas",
-        lazy="selectin"
+        lazy="selectin",
+        
     )
 
 
