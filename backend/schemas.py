@@ -106,3 +106,6 @@ class Login(BaseModel):
 
     class Config: 
         from_attributes = True
+
+class MotivoRequest(BaseModel):
+    motivo_visita: str

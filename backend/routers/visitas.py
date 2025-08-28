@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends,  HTTPException
+from fastapi import APIRouter, Body, Depends,  HTTPException
 from sqlalchemy.orm import Session
 from backend import crud, models, schemas
 from backend.database import get_db
@@ -70,15 +70,15 @@ def historico_visitante(visitante_id: int, db: Session = Depends(get_db)):
 
 # Alterar motivo da visita em andamento de um visitante
 @router.put("/visitantes/{visitante_id}/alterar-motivo", response_model=schemas.VisitanteOut)
-def alterar_motivo(visitante_id: int, motivo: dict, db: Session = Depends(get_db)):
-    """
-    Rota para alterar motivo da visita ao reinicia-la.
-    """
+def alterar_motivo(visitante_id: int, motivo: schemas.MotivoRequest, db: Session = Depends(get_db)
+):
+    
+
     visitante = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
     if not visitante:
         raise HTTPException(status_code=200, detail="Visitante não encontrado")
     
-    visitante.motivo_visita = motivo.get("motivo_visita")
+    visitante.motivo_visita = motivo.motivo_visita 
     db.commit()
     db.refresh(visitante)
     return visitante

@@ -21,7 +21,7 @@ def create_visitante(visitante: schemas.VisitanteCreate, db: Session = Depends(g
 
 # Listar visitantes com paginação
 @router.get("/", response_model=List[schemas.VisitanteOut])
-def get_visitantes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def get_visitantes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """
     Rota para listar todos os visitantes cadastrados.
     """
@@ -30,7 +30,7 @@ def get_visitantes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
 
 # Buscar visitante por nome ou documento
 @router.get("/buscar", response_model=List[schemas.VisitanteOut])
-def buscar_visitantes(termo: str = "", db: Session = Depends(get_db)):
+async def buscar_visitantes(termo: str = "", db: Session = Depends(get_db)):
     """
     Rota para buscar visitante pelo seu id. 
     """
