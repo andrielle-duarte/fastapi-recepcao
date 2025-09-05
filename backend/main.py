@@ -1,8 +1,8 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routers.visitas import router as visitas_router
 from backend.routers.visitantes import router as visitantes_router
-from backend.routers.auth import router as auth_router
+from backend.routers.auth import get_current_user, router as auth_router
 from . import  models
 from .database import engine
 import logging
@@ -39,7 +39,11 @@ app.add_middleware(
 )
 
 # Endpoint raiz para checar status da API
-@app.get("/")
-def root():
-    return {"status": "Sistema de recepção ativo"}
 
+@app.get("/public")
+def public():
+    return {"msg": "Rota pública, sem autenticação"}
+
+@app.get("/private")
+def private(user: dict = Depends(get_current_user)):
+    return {"msg": "Rota protegida", "user": user}

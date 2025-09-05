@@ -70,10 +70,8 @@ def historico_visitante(visitante_id: int, db: Session = Depends(get_db)):
 
 # Alterar motivo da visita em andamento de um visitante
 @router.put("/visitantes/{visitante_id}/alterar-motivo", response_model=schemas.VisitanteOut)
-def alterar_motivo(visitante_id: int, motivo: schemas.MotivoRequest, db: Session = Depends(get_db)
-):
+def alterar_motivo(visitante_id: int, motivo: schemas.MotivoRequest, db: Session = Depends(get_db)):
     
-
     visitante = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
     if not visitante:
         raise HTTPException(status_code=200, detail="Visitante não encontrado")

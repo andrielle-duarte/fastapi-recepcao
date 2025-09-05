@@ -1,15 +1,53 @@
 from datetime import datetime, timedelta, timezone
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
-from backend import crud, schemas
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from backend import schemas
 from backend.core.security import bcrypt_context, oauth2_schema, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
 from sqlalchemy.orm import Session
 from backend.database import get_db
 from jose import jwt, JWTError
 from backend.models import Recepcionista
+import requests
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+# Configurações do Keycloak
+KEYCLOAK_URL = "http://localhost:8080/realms/recepcao"
+CLIENT_ID = "recepcao-frontend"
+
+router = APIRouter(prefix="/auth", tags=["auth"]) 
+
+# Endpoint público para pegar chaves do realm
+JWKS_URL = f"{KEYCLOAK_URL}/protocol/openid-connect/certs"
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+# Pegar JWKS (chaves públicas do Keycloak)
+jwks = requests.get(JWKS_URL).json()
+
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        header = jwt.get_unverified_header(token)
+        key = None
+        for k in jwks["keys"]:
+            if k["kid"] == header["kid"]:
+                key = k
+        if not key:
+            raise HTTPException(status_code=401, detail="Key not found")
+
+        # Decodificar token
+        payload = jwt.decode(
+            token,
+            key,
+            algorithms=["RS256"],
+            audience=CLIENT_ID
+        )
+        return payload
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido"
+        )
+
+
+##Autenticação local (sem Keycloak) - manter para compatibilidade
 
 def verificar_token(token: str = Depends(oauth2_schema), session: Session = Depends(get_db)):
     try:
