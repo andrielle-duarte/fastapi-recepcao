@@ -10,7 +10,7 @@ from backend.routers.auth import verificar_token
 from ..database import get_db
 from zoneinfo import ZoneInfo
 
-router = APIRouter(prefix="/visitas", tags=["Visitas"], dependencies = [Depends(verificar_token)])
+router = APIRouter(prefix="/visitas", tags=["Visitas"])
 def now_brasilia():
     return datetime.now(ZoneInfo("America/Sao_Paulo"))
 

@@ -7,7 +7,7 @@ from backend.routers.auth import verificar_token
 from backend.models import Recepcionista
 
 
-router = APIRouter(prefix="/visitantes", tags=["Visitantes"], dependencies = [Depends(verificar_token)])
+router = APIRouter(prefix="/visitantes", tags=["Visitantes"])
 
 
 # Criar visitante

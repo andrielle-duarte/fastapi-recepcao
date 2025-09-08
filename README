@@ -20,6 +20,7 @@ Projeto básico de API para controle de visitantes desenvolvido com FastAPI.
 - Uvicorn
 - Pydantic
 - Dotenv
+- Requests
 
 Pacote TZDATA ####Não esqueça 
 
