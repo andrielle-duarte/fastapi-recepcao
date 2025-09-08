@@ -15,11 +15,11 @@ CLIENT_ID = "recepcao-frontend"
 
 router = APIRouter(prefix="/auth", tags=["auth"]) 
 
-# Endpoint público para pegar chaves do realm
+
 JWKS_URL = f"{KEYCLOAK_URL}/protocol/openid-connect/certs"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Pegar JWKS (chaves públicas do Keycloak)
+
 jwks = requests.get(JWKS_URL).json()
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
