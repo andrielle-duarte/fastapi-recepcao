@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import os
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from backend import schemas
@@ -8,10 +9,15 @@ from backend.database import get_db
 from jose import jwt, JWTError
 from backend.models import Recepcionista
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Configurações do Keycloak
-KEYCLOAK_URL = "http://localhost:8080/realms/recepcao"
-CLIENT_ID = "recepcao-frontend"
+KEYCLOAK_URL=os.getenv("KEYCLOAK_URL")
+CLIENT_ID=os.getenv("CLIENT_ID")
+
+
 
 router = APIRouter(prefix="/auth", tags=["auth"]) 
 

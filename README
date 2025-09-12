@@ -24,8 +24,10 @@ Projeto básico de API para controle de visitantes desenvolvido com FastAPI.
 
 Pacote TZDATA ####Não esqueça 
 
-##Como executar
+#  Como iniciar o servidor do Keycloak localmente
+.\kc.bat start-dev --http-port=8080
 
+##Como executar
 uvicorn backend.main:app --reload
 
 ### Pré-requisitos
@@ -63,3 +65,13 @@ DB_PASSWORD=sua_senha
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=seu_banco
+
+SECRET_KEY=
+ALGORITHM="RS256"
+ACCESS_TOKEN_EXPIRE_MINUTES=10
+
+KEYCLOAK_URL=http://localhost:8080/realms/recepcao
+CLIENT_ID=recepcao-frontend
+
+##  iniciar o servidor do Keycloak localmente
+##  .\kc.bat start-dev --http-port=8080

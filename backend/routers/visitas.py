@@ -5,8 +5,6 @@ from backend import crud, models, schemas
 from backend.database import get_db
 from backend.models import Visita
 from datetime import datetime
-
-from backend.routers.auth import verificar_token
 from ..database import get_db
 from zoneinfo import ZoneInfo
 
