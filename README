@@ -54,6 +54,8 @@ fastapi-recepcao/
 │   ├── database.py      # Configuração do banco
 ├── README.md            # Documentação principal
 
+#atualizar a estrutura do projeto conforme o avanço 
+
  Observações
 Esse projeto é um MVP (Produto Mínimo Viável) para testes e validações internas do sistema de recepção do IFRJ.
 

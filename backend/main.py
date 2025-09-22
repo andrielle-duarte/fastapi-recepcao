@@ -1,5 +1,6 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
 from backend.routers.visitas import router as visitas_router
 from backend.routers.visitantes import router as visitantes_router
 from backend.routers.auth import get_current_user, router as auth_router
@@ -9,6 +10,9 @@ import logging
 
 app = FastAPI()
 
+@app.post("/token")
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    return {"access_token": form_data.username, "token_type": "bearer"}
 
 logging.basicConfig(
     filename="app.log",
