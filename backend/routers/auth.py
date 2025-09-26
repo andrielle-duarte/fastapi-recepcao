@@ -25,8 +25,20 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 JWKS_URL = f"{KEYCLOAK_URL}/protocol/openid-connect/certs"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-
-jwks = requests.get(JWKS_URL).json()
+try: 
+    response = requests.get(JWKS_URL, timeout=5)
+    response.raise_for_status()
+    jwks = response.json()
+except requests.RequestException:
+    raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Não esta conectado ao Keycloak."
+        )
+except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Resposta inválida do Keycloak."
+        )
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
