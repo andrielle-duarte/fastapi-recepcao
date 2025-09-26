@@ -8,7 +8,11 @@ from . import  models
 from .database import engine
 import logging
 
-app = FastAPI()
+app = FastAPI(
+    title="Sistema de Recepção do Ifrj",
+    description="API para gerenciar visitantes e visitas no Ifrj",
+    version="1.0.0",
+)
 
 @app.post("/token")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
