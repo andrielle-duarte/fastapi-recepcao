@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend import crud, models, schemas
 from backend.database import get_db
-from backend.routers.auth import verificar_token
+from backend.routers.auth import get_current_user
 from backend.models import Recepcionista
 
 
@@ -42,18 +42,26 @@ async def buscar_visitantes(termo: str = "", db: Session = Depends(get_db)):
 
 
 
-# Deletar visitante
 @router.delete("/{visitante_id}")
-def delete_visitante(visitante_id: int, db: Session = Depends(get_db), recepcionista: Recepcionista = Depends(verificar_token)):
-    """
-    Rota para deletar um visitante.
-    """
+def delete_visitante(
+    visitante_id: int,
+    db: Session = Depends(get_db),
+    recepcionista: Recepcionista = Depends(get_current_user)
+):
     if not recepcionista.admin:
-        raise HTTPException(status_code=401, detail="Você não tem autorização para fazer essa operação")
+        raise HTTPException(
+            status_code=401,
+            detail="Você não tem autorização para fazer essa operação"
+        )
+
     visitante_db = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
     if not visitante_db:
-        raise HTTPException(status_code=404, detail="Visitante não encontrado")
+        raise HTTPException(
+            status_code=404,
+            detail="Visitante não encontrado"
+        )
+
     db.delete(visitante_db)
     db.commit()
+
     return {"mensagem": f"Visitante deletado com sucesso. ID do visitante: {visitante_id}"}
- 

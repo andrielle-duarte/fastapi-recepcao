@@ -35,12 +35,15 @@ app.include_router(visitantes_router)
 # Cria as tabelas no banco de dados (se não existirem)
 models.Base.metadata.create_all(bind=engine)
 
-
+#Botar em variável de ambiente depois
+origins = [
+    "http://localhost:5173"
+]
 
 # Configuração CORS para permitir chamadas do frontend em localhost:5174 ou 73 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins= ["http://localhost:5173"],  
+    allow_origins= origins,  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
