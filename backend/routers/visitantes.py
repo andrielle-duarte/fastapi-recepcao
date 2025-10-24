@@ -1,10 +1,10 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from backend import crud, models, schemas
-from backend.database import get_db
-from backend.routers.auth import get_current_user
-from backend.models import Recepcionista
+import crud, models, schemas
+from database import get_db
+from routers.auth import get_current_user
+from models import Recepcionista
 
 
 router = APIRouter(prefix="/visitantes", tags=["Visitantes"])

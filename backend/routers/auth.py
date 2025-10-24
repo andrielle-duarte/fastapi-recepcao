@@ -1,12 +1,12 @@
-from backend.core.security import bcrypt_context
+from core.security import bcrypt_context
 import os
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from backend import schemas
+import schemas
 from sqlalchemy.orm import Session
-from backend.database import get_db
+from database import get_db
 from jose import jwt, JWTError
-from backend.models import Recepcionista
+from models import Recepcionista
 import requests
 from dotenv import load_dotenv
 
@@ -21,7 +21,7 @@ JWKS_URL = f"{KEYCLOAK_URL}/protocol/openid-connect/certs"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 try:
-    response = requests.get(JWKS_URL, timeout=5)
+    response = requests.get(JWKS_URL, timeout=25)
     response.raise_for_status()
     jwks = response.json()
 except requests.RequestException:

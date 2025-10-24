@@ -1,8 +1,10 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from .database import Base
+
 from zoneinfo import ZoneInfo
+
+from database import Base
 
 def now_brasilia():
     return datetime.now(ZoneInfo("America/Sao_Paulo"))

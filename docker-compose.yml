@@ -1,0 +1,73 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_keycloak
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456789
+      - MYSQL_DATABASE=keycloak
+      - MYSQL_USER=andrielle
+      - MYSQL_PASSWORD=123456789
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      retries: 30
+      start_period: 40s
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.0
+    container_name: keycloak
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - KEYCLOAK_ADMIN=andrielle
+      - KEYCLOAK_ADMIN_PASSWORD=123456789
+      - KC_DB=mysql
+      - KC_DB_USERNAME=andrielle
+      - KC_DB_PASSWORD=123456789
+      - KC_DB_URL_HOST=mysql
+      - KC_DB_URL_PORT=3306
+      - KC_DB_SCHEMA=keycloak
+    command:
+      - start-dev
+    ports:
+      - "8080:8080"
+
+  backend:
+    build: ./backend
+    container_name: fastapi_backend
+    restart: unless-stopped
+    environment:
+      - DB_USER=recepcao_user
+      - DB_PASSWORD=s3nh4d3t3st3
+      - DB_NAME=recepcao
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - SECRET_KEY=xPetO7Pd4jMxLbyNkTVl947Gxzlx0H4H
+      - ALGORITHM=RS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=10
+      - KEYCLOAK_URL=http://keycloak:8080/realms/recepcao
+      - CLIENT_ID=recepcao-frontend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+      - keycloak
+    command: ["python", "wait_for_keycloak.py", "keycloak:8080", "-t", "600","--", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  frontend:
+    build: ./frontend
+    container_name: react_frontend
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_KEYCLOAK_URL=http://localhost:8080
+      - VITE_KEYCLOAK_REALM=recepcao
+      - VITE_KEYCLOAK_CLIENT_ID=recepcao-frontend
+    depends_on:
+      - backend

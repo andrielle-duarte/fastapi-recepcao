@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
-from backend import models, schemas
+import models, schemas
 
 
 # Visitante

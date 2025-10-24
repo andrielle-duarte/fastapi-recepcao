@@ -1,12 +1,29 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
-from backend.routers.visitas import router as visitas_router
-from backend.routers.visitantes import router as visitantes_router
-from backend.routers.auth import get_current_user, router as auth_router
+from routers.visitas import router as visitas_router
+from routers.visitantes import router as visitantes_router
+from routers.auth import get_current_user, router as auth_router
 from . import  models
 from .database import engine
 import logging
+import time
+import requests
+
+def wait_for_keycloak(url, retries=10, delay=5):
+    for _ in range(retries):
+        try:
+            r = requests.get(url)
+            if r.status_code == 200:
+                return True
+        except Exception:
+            pass
+        time.sleep(delay)
+    return False
+
+if not wait_for_keycloak("http://keycloak:8080/realms/recepcao/protocol/openid-connect/certs"):
+    raise Exception("Keycloak não disponível")
+
 
 app = FastAPI(
     title="Sistema de Recepção do Ifrj",

@@ -1,11 +1,11 @@
 from typing import List
 from fastapi import APIRouter, Body, Depends,  HTTPException
 from sqlalchemy.orm import Session
-from backend import crud, models, schemas
-from backend.database import get_db
-from backend.models import Visita
+import crud, models, schemas
+from database import get_db
+from models import Visita
 from datetime import datetime
-from ..database import get_db
+
 from zoneinfo import ZoneInfo
 
 router = APIRouter(prefix="/visitas", tags=["Visitas"])
