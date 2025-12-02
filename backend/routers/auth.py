@@ -14,10 +14,11 @@ load_dotenv()
 
 KEYCLOAK_URL = os.getenv("KEYCLOAK_URL")
 CLIENT_ID = os.getenv("CLIENT_ID")
+KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM")
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-JWKS_URL = f"{KEYCLOAK_URL}/protocol/openid-connect/certs"
+JWKS_URL = f"{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/certs"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 try:
