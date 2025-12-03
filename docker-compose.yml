@@ -1,0 +1,71 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+     build: ./backend
+     container_name: backend
+     restart: always
+     depends_on:
+       mysql:
+         condition: service_healthy
+     environment:
+       DB_USER: ${DB_USER}
+       DB_PASSWORD: ${DB_PASSWORD}
+       DB_NAME: ${DB_NAME}
+       DB_HOST: mysql
+       DB_PORT: ${DB_PORT}
+       ALGORITHM: ${ALGORITHM}
+       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
+       KEYCLOAK_URL: ${KEYCLOAK_URL}
+       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+       CLIENT_ID: ${CLIENT_ID}
+       PYTHONPATH: /app
+     volumes:
+       - ./backend:/app/backend
+     working_dir: /app/backend
+     command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+     ports:
+       - "8000:8000"
+ 
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    restart: always
+    depends_on:
+      - backend
+    environment:
+      VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
+      VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
+      VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
+      VITE_API_BASE_URL: http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    working_dir: /app
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    ports:
+      - "5173:5173"
+
+volumes:
+  mysql_data:

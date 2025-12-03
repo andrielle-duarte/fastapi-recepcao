@@ -36,7 +36,10 @@ except ValueError:
         detail="Resposta inválida do Keycloak."
     )
 
-def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Depends(get_db)):
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    session: Session = Depends(get_db)
+):
     try:
         header = jwt.get_unverified_header(token)
         key = next((k for k in jwks["keys"] if k["kid"] == header["kid"]), None)
@@ -44,20 +47,33 @@ def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Dep
             raise HTTPException(status_code=401, detail="Chave pública do token não encontrada.")
 
         payload = jwt.decode(token, key, algorithms=["RS256"], audience="account")
-        recepcionista = session.query(Recepcionista).filter(Recepcionista.email == payload.get("email")).first()
+
+        recepcionista = session.query(Recepcionista).filter(
+            Recepcionista.email == payload.get("email")
+        ).first()
+
         if not recepcionista:
             recepcionista = Recepcionista(
                 nome=payload.get("name"),
                 email=payload.get("email"),
                 senha="autenticado-keycloak",
-                admin="admin" in payload.get("realm_access", {}).get("roles", [])
+                admin="admin" in payload.get("realm_access", {}).get("roles", []),
             )
             session.add(recepcionista)
             session.commit()
             session.refresh(recepcionista)
+
+        # PRINT NA “ENTRADA” DO USUÁRIO
+        print(
+            f"[LOGIN] {recepcionista.nome} "
+            f"(email={recepcionista.email}, admin={recepcionista.admin})"
+        )
+
         return recepcionista
 
     except JWTError:
+        raise HTTPException(status_code=401, detail="Token inválido")
+
         raise HTTPException(status_code=401, detail="Token inválido")
 
 @router.post("/criar_conta", response_model=schemas.RecepcionistaOut)
