@@ -6,22 +6,33 @@ from backend.database import get_db
 from backend.routers.auth import get_current_user
 from backend.models import Recepcionista
 
-
 router = APIRouter(prefix="/visitantes", tags=["Visitantes"])
 
 
 # Criar visitante
 @router.post("/", response_model=schemas.VisitanteOut)
-def create_visitante(visitante: schemas.VisitanteCreate, db: Session = Depends(get_db)):
+def create_visitante(
+    visitante: schemas.VisitanteCreate,
+    db: Session = Depends(get_db),
+    user: Recepcionista = Depends(get_current_user),
+):
     """
     Rota pra criar um visitante.
     """
+    # se só admin puder criar visitante, descomente:
+    if not user.admin:
+        raise HTTPException(status_code=401, detail="Apenas administradores podem criar visitantes.")
     return crud.create_visitante(db=db, visitante=visitante)
 
 
 # Listar visitantes com paginação
 @router.get("/", response_model=List[schemas.VisitanteOut])
-async def get_visitantes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def get_visitantes(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    user: Recepcionista = Depends(get_current_user),
+):
     """
     Rota para listar todos os visitantes cadastrados.
     """
@@ -30,38 +41,51 @@ async def get_visitantes(skip: int = 0, limit: int = 100, db: Session = Depends(
 
 # Buscar visitante por nome ou documento
 @router.get("/buscar", response_model=List[schemas.VisitanteOut])
-async def buscar_visitantes(termo: str = "", db: Session = Depends(get_db)):
+async def buscar_visitantes(
+    termo: str = "",
+    db: Session = Depends(get_db),
+    user: Recepcionista = Depends(get_current_user),
+):
     """
-    Rota para buscar visitante pelo seu id. 
+    Rota para buscar visitante por nome ou documento.
     """
-    visitantes = db.query(models.Visitante).filter(
-        (models.Visitante.nome.ilike(f"%{termo}%")) |
-        (models.Visitante.documento.ilike(f"%{termo}%"))
-    ).all()
+    visitantes = (
+        db.query(models.Visitante)
+        .filter(
+            (models.Visitante.nome.ilike(f"%{termo}%"))
+            | (models.Visitante.documento.ilike(f"%{termo}%"))
+        )
+        .all()
+    )
     return visitantes
-
 
 
 @router.delete("/{visitante_id}")
 def delete_visitante(
     visitante_id: int,
     db: Session = Depends(get_db),
-    recepcionista: Recepcionista = Depends(get_current_user)
+    recepcionista: Recepcionista = Depends(get_current_user),
 ):
     if not recepcionista.admin:
         raise HTTPException(
             status_code=401,
-            detail="Você não tem autorização para fazer essa operação"
+            detail="Você não tem autorização para fazer essa operação",
         )
 
-    visitante_db = db.query(models.Visitante).filter(models.Visitante.id == visitante_id).first()
+    visitante_db = (
+        db.query(models.Visitante)
+        .filter(models.Visitante.id == visitante_id)
+        .first()
+    )
     if not visitante_db:
         raise HTTPException(
             status_code=404,
-            detail="Visitante não encontrado"
+            detail="Visitante não encontrado",
         )
 
     db.delete(visitante_db)
     db.commit()
 
-    return {"mensagem": f"Visitante deletado com sucesso. ID do visitante: {visitante_id}"}
+    return {
+        "mensagem": f"Visitante deletado com sucesso. ID do visitante: {visitante_id}"
+    }

@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from backend import schemas
 from sqlalchemy.orm import Session
 from backend.database import get_db
-from jose import jwt, JWTError
+from jose import ExpiredSignatureError, jwt, JWTError
 from backend.models import Recepcionista
 import requests
 from dotenv import load_dotenv
@@ -28,29 +28,36 @@ try:
 except requests.RequestException:
     raise HTTPException(
         status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-        detail="Não está conectado ao Keycloak."
+        detail="Não está conectado ao Keycloak.",
     )
 except ValueError:
     raise HTTPException(
         status_code=status.HTTP_502_BAD_GATEWAY,
-        detail="Resposta inválida do Keycloak."
+        detail="Resposta inválida do Keycloak.",
     )
+
 
 def get_current_user(
     token: str = Depends(oauth2_scheme),
-    session: Session = Depends(get_db)
+    session: Session = Depends(get_db),
 ):
     try:
         header = jwt.get_unverified_header(token)
         key = next((k for k in jwks["keys"] if k["kid"] == header["kid"]), None)
         if not key:
-            raise HTTPException(status_code=401, detail="Chave pública do token não encontrada.")
+            raise HTTPException(
+                status_code=401,
+                detail="Chave pública do token não encontrada.",
+            )
 
+        # aqui o jose valida o exp; se tiver vencido, lança ExpiredSignatureError
         payload = jwt.decode(token, key, algorithms=["RS256"], audience="account")
 
-        recepcionista = session.query(Recepcionista).filter(
-            Recepcionista.email == payload.get("email")
-        ).first()
+        recepcionista = (
+            session.query(Recepcionista)
+            .filter(Recepcionista.email == payload.get("email"))
+            .first()
+        )
 
         if not recepcionista:
             recepcionista = Recepcionista(
@@ -63,7 +70,6 @@ def get_current_user(
             session.commit()
             session.refresh(recepcionista)
 
-        # PRINT NA “ENTRADA” DO USUÁRIO
         print(
             f"[LOGIN] {recepcionista.nome} "
             f"(email={recepcionista.email}, admin={recepcionista.admin})"
@@ -71,10 +77,13 @@ def get_current_user(
 
         return recepcionista
 
+    except ExpiredSignatureError:
+        print("[AUTH] Token expirado")
+        raise HTTPException(status_code=401, detail="Token expirado")
     except JWTError:
         raise HTTPException(status_code=401, detail="Token inválido")
 
-        raise HTTPException(status_code=401, detail="Token inválido")
+        
 
 @router.post("/criar_conta", response_model=schemas.RecepcionistaOut)
 async def criar_conta(
