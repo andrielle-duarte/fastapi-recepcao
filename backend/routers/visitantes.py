@@ -20,8 +20,8 @@ def create_visitante(
     Rota pra criar um visitante.
     """
     # se só admin puder criar visitante, descomente:
-    if not user.admin:
-        raise HTTPException(status_code=401, detail="Apenas administradores podem criar visitantes.")
+    # if not user.admin:
+    #     raise HTTPException(status_code=401, detail="Apenas administradores podem criar visitantes.")
     return crud.create_visitante(db=db, visitante=visitante)
 
 
@@ -66,6 +66,7 @@ def delete_visitante(
     db: Session = Depends(get_db),
     recepcionista: Recepcionista = Depends(get_current_user),
 ):
+    #condição teoricamente desnecessária, pois o frontend já bloqueia o acesso a essa rota para recepcionistas não admin
     if not recepcionista.admin:
         raise HTTPException(
             status_code=401,

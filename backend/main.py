@@ -6,7 +6,10 @@ from backend.routers.visitantes import router as visitantes_router
 from backend.routers.auth import get_current_user, router as auth_router
 from . import  models
 from .database import engine
-import logging
+import logging, os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI(
     title="Sistema de Recepção do Ifrj",
@@ -36,18 +39,22 @@ app.include_router(visitantes_router)
 models.Base.metadata.create_all(bind=engine)
 
 #Botar em variável de ambiente depois
-origins = [
-    "http://localhost:5173"
-]
+raw_origins = os.getenv("origins", "")
 
-# Configuração CORS para permitir chamadas do frontend em localhost:5174 ou 73 
+if raw_origins:
+    origins = [o.strip() for o in raw_origins.split(",")]
+else:
+    # fallback seguro em dev
+    origins = ["http://localhost:5173"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins= origins,  
+    allow_origins=origins, 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Endpoint raiz para checar status da API
 

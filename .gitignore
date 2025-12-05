@@ -11,3 +11,4 @@ __pycache__/
 
 # Configs do editor
 .vscode/
+.node_modules/
