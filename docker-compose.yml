@@ -22,6 +22,8 @@ services:
     
   backend:
     build: ./backend
+    env_file:
+      - .env
     container_name: backend
     restart: always
     depends_on:

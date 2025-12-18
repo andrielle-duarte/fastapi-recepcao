@@ -51,7 +51,7 @@ def get_current_user(
             )
 
         # aqui o jose valida o exp; se tiver vencido, lança ExpiredSignatureError
-        payload = jwt.decode(token, key, algorithms=["RS256"], audience="account")
+        payload = jwt.decode(token, key, algorithms=["RS256"], audience="account") #Evitar algorithms=["HS256", "RS256", "ES256", ...] ou deixar python-jose decidir, pois pode levar a ataques de confusão de algoritmo
 
         recepcionista = (
             session.query(Recepcionista)

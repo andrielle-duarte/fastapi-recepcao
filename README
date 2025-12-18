@@ -1,257 +1,267 @@
-# Sistema de Recepção – IFRJ
-
-Aplicação para controle de visitantes do IFRJ, com **backend em FastAPI**, **frontend web** e **banco MySQL**, orquestrados com **Docker Compose** e integrados ao **Keycloak** para autenticação.
-
-
-## 1. Funcionalidades principais
-
-- Cadastro de visitantes  
-- Listagem de visitantes  
-- Consulta de visitante por ID  
-- Edição de dados do visitante  
-- Remoção de visitante  
-- Validação de campos obrigatórios  
-- Autenticação via Keycloak (login / proteção de rotas)
-
-## 2. Tecnologias utilizadas
-
-**Backend**
-
-- Python 3.11+  
-- FastAPI, SQLAlchemy, Pydantic, Uvicorn  
-- python-dotenv, Requests, tzdata  
-
-**Frontend**
-
-- Aplicação frontend (ex.: React + Vite)  
-- Integração com Keycloak (`VITE_KEYCLOAK_*`)  
-
-**Infra / Autenticação**
-
-- MySQL 8.0  
-- Docker e Docker Compose  
-- Keycloak  
-
-## 3. Estrutura do projeto
-
-fastapi-recepcao/
-├── backend/
-│ ├── main.py # Ponto de entrada FastAPI
-│ ├── models.py # Tabelas do banco
-│ ├── schemas.py # Schemas Pydantic
-│ ├── crud.py # Operações de banco
-│ ├── database.py # Conexão com MySQL
-│ ├── core/ # Configurações, segurança, etc.
-│ ├── routers/ # Rotas (visitantes, auth, etc.)
-│ ├── requirements.txt
-│ └── Dockerfile
-├── frontend/
-│ ├── src/
-│ ├── public/
-│ └── Dockerfile
-├── docker-compose.yml
-├── .env
-└── README.md
-
-## 4. Configuração do `.env` (obrigatório)
-
-Crie um arquivo `.env` **na raiz do projeto** (`fastapi-recepcao/.env`) com o seguinte conteúdo (ajuste valores):
-
-Banco de dados (usado pelo Docker)
-DB_USER=ifrj_recepcao
-DB_PASSWORD=teste123
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=recepcao
-
-Segurança / JWT
-SECRET_KEY=uma_chave_secreta_bem_grande_e_dificil
-
-Keycloak (backend)
-KEYCLOAK_URL=https://acesso.dev.ifrj.edu.br
-KEYCLOAK_REALM=master
-CLIENT_ID=recepcao-frontend
-
-Keycloak (frontend)
-VITE_KEYCLOAK_URL=https://acesso.dev.ifrj.edu.br
-VITE_KEYCLOAK_REALM=master
-VITE_KEYCLOAK_CLIENT_ID=recepcao-frontend
-
-> Observação:  
-> - O **MySQL** roda dentro do container na porta interna `3306` e é exposto em `localhost:3307`.  
-> - O backend acessa o banco usando `DB_HOST=mysql` (nome do serviço no Docker).
-
-## 5. Arquivo `docker-compose.yml` (para referência)
-
-Este arquivo já está na raiz do projeto. Ele sobe **MySQL**, **backend** e **frontend**:
-
-services:
-mysql:
-image: mysql:8.0
-container_name: mysql
-restart: always
-environment:
-MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-MYSQL_DATABASE: ${DB_NAME}
-MYSQL_USER: ${DB_USER}
-MYSQL_PASSWORD: ${DB_PASSWORD}
-ports:
-- "3307:3306"
-volumes:
-- mysql_data:/var/lib/mysql
-healthcheck:
-test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${DB_USER} -p${DB_PASSWORD} || exit 1"]
-interval: 10s
-timeout: 5s
-retries: 10
-start_period: 40s
-
-backend:
-build: ./backend
-container_name: backend
-restart: always
-depends_on:
-mysql:
-condition: service_healthy
-environment:
-DB_USER: ${DB_USER}
-DB_PASSWORD: ${DB_PASSWORD}
-DB_NAME: ${DB_NAME}
-DB_HOST: mysql
-DB_PORT: ${DB_PORT}
-KEYCLOAK_URL: ${KEYCLOAK_URL}
-KEYCLOAK_REALM: ${KEYCLOAK_REALM}
-CLIENT_ID: ${CLIENT_ID}
-PYTHONPATH: /app
-volumes:
-- ./backend:/app/backend
-working_dir: /app/backend
-command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
-ports:
-- "8000:8000"
+# # Sistema de Recepção – IFRJ
 
-frontend:
-build: ./frontend
-container_name: frontend
-restart: always
-depends_on:
+# Aplicação para controle de visitantes do IFRJ, com **backend em FastAPI**, **frontend web** e **banco MySQL**, orquestrados com **Docker Compose** e integrados ao **Keycloak** para autenticação.
 
-- backend
-environment:
-VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
-VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
-VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
-VITE_API_BASE_URL: http://backend:8000
-volumes:
-- ./frontend:/app
-- /app/node_modules
-working_dir: /app
-command: npm run dev -- --host 0.0.0.0 --port 5173
-ports:
-- "5173:5173"
-volumes:
-mysql_data:
 
-## 6. Passo a passo para rodar o projeto com Docker (para o chefe)
+# ## 1. Funcionalidades principais
+
+# - Cadastro de visitantes  
+# - Listagem de visitantes  
+# - Consulta de visitante por ID  
+# - Edição de dados do visitante  
+# - Remoção de visitante  
+# - Validação de campos obrigatórios  
+# - Autenticação via Keycloak (login / proteção de rotas)
+
+# ## 2. Tecnologias utilizadas
+
+# **Backend**
+
+# - Python 3.11+  
+# - FastAPI, SQLAlchemy, Pydantic, Uvicorn  
+# - python-dotenv, Requests, tzdata  
+
+# # # #Dependência ecdsa 0.19.1  é afetado pela CVE‑2024‑23342 (ataque de timing Minerva em curvas P‑256) 
+# # # #permitindo potencial vazamento de chaves privadas em cenários de alta precisão de medição de tempo
+# # # #CVE‑2024‑23342 e que não há patch disponível.
+# # # # Ele é dependência direta de:
+# # # # fastapi_keycloak
+# # # # python-jose
+
+###### Manter algoritmo de assinatura do access token é RS256 e não ES256.
+
+
+# **Frontend**
+
+# - Aplicação frontend (ex.: React + Vite)  
+# - Integração com Keycloak (`VITE_KEYCLOAK_*`)  
+
+# **Infra / Autenticação**
+
+# - MySQL 8.0  
+# - Docker e Docker Compose  
+# - Keycloak  
+
+# ## 3. Estrutura do projeto
+
+# fastapi-recepcao/
+# ├── backend/
+# │ ├── main.py # Ponto de entrada FastAPI
+# │ ├── models.py # Tabelas do banco
+# │ ├── schemas.py # Schemas Pydantic
+# │ ├── crud.py # Operações de banco
+# │ ├── database.py # Conexão com MySQL
+# │ ├── core/ # Configurações, segurança, etc.
+# │ ├── routers/ # Rotas (visitantes, auth, etc.)
+# │ ├── requirements.txt
+# │ └── Dockerfile
+# ├── frontend/
+# │ ├── src/
+# │ ├── public/
+# │ └── Dockerfile
+# ├── docker-compose.yml
+# ├── .env
+# └── README.md
+
+# ## 4. Configuração do `.env` (obrigatório)
+
+# Crie um arquivo `.env` **na raiz do projeto** (`fastapi-recepcao/.env`) com o seguinte conteúdo (ajuste valores):
+
+# Banco de dados (usado pelo Docker)
+# DB_USER=ifrj_recepcao
+# DB_PASSWORD=teste123
+# DB_HOST=localhost
+# DB_PORT=3306
+# DB_NAME=recepcao
+
+# Segurança / JWT
+# SECRET_KEY=uma_chave_secreta_bem_grande_e_dificil
+
+# Keycloak (backend)
+# KEYCLOAK_URL=https://acesso.dev.ifrj.edu.br
+# KEYCLOAK_REALM=master
+# CLIENT_ID=recepcao-frontend
+
+# Keycloak (frontend)
+# VITE_KEYCLOAK_URL=https://acesso.dev.ifrj.edu.br
+# VITE_KEYCLOAK_REALM=master
+# VITE_KEYCLOAK_CLIENT_ID=recepcao-frontend
+
+# > Observação:  
+# > - O **MySQL** roda dentro do container na porta interna `3306` e é exposto em `localhost:3307`.  
+# > - O backend acessa o banco usando `DB_HOST=mysql` (nome do serviço no Docker).
+
+# ## 5. Arquivo `docker-compose.yml` (para referência)
+
+# Este arquivo já está na raiz do projeto. Ele sobe **MySQL**, **backend** e **frontend**:
+
+# services:
+# mysql:
+# image: mysql:8.0
+# container_name: mysql
+# restart: always
+# environment:
+# MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+# MYSQL_DATABASE: ${DB_NAME}
+# MYSQL_USER: ${DB_USER}
+# MYSQL_PASSWORD: ${DB_PASSWORD}
+# ports:
+# - "3307:3306"
+# volumes:
+# - mysql_data:/var/lib/mysql
+# healthcheck:
+# test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${DB_USER} -p${DB_PASSWORD} || exit 1"]
+# interval: 10s
+# timeout: 5s
+# retries: 10
+# start_period: 40s
+
+# backend:
+# build: ./backend
+# container_name: backend
+# restart: always
+# depends_on:
+# mysql:
+# condition: service_healthy
+# environment:
+# DB_USER: ${DB_USER}
+# DB_PASSWORD: ${DB_PASSWORD}
+# DB_NAME: ${DB_NAME}
+# DB_HOST: mysql
+# DB_PORT: ${DB_PORT}
+# KEYCLOAK_URL: ${KEYCLOAK_URL}
+# KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+# CLIENT_ID: ${CLIENT_ID}
+# PYTHONPATH: /app
+# volumes:
+# - ./backend:/app/backend
+# working_dir: /app/backend
+# command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+# ports:
+# - "8000:8000"
 
-### 6.1. Pré‑requisitos
+# frontend:
+# build: ./frontend
+# container_name: frontend
+# restart: always
+# depends_on:
 
-- Docker instalado  
-- Docker Compose (já vem com o Docker Desktop)
+# - backend
+# environment:
+# VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
+# VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
+# VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
+# VITE_API_BASE_URL: http://backend:8000
+# volumes:
+# - ./frontend:/app
+# - /app/node_modules
+# working_dir: /app
+# command: npm run dev -- --host 0.0.0.0 --port 5173
+# ports:
+# - "5173:5173"
+# volumes:
+# mysql_data:
 
-### 6.2. Clonar o repositório
+# ## 6. Passo a passo para rodar o projeto com Docker (para o chefe)
 
-git clone https://github.com/andrielle-duarte/fastapi-recepcao.git
-cd fastapi-recepcao
+# ### 6.1. Pré‑requisitos
 
-### 6.3. Criar o `.env`
+# - Docker instalado  
+# - Docker Compose (já vem com o Docker Desktop)
 
-Criar o arquivo `.env` na raiz, copiando o exemplo da seção **4**.
+# ### 6.2. Clonar o repositório
 
-### 6.4. Iniciar o Keycloak
+# git clone https://github.com/andrielle-duarte/fastapi-recepcao.git
+# cd fastapi-recepcao
 
-Em outra pasta, onde estiver o `kc.bat`:
+# ### 6.3. Criar o `.env`
 
-.\kc.bat start-dev --http-port=8080
+# Criar o arquivo `.env` na raiz, copiando o exemplo da seção **4**.
 
-Deixar o Keycloak rodando em `http://localhost:8080`.
+# ### 6.4. Iniciar o Keycloak
 
-### 6.5. Subir a aplicação
+# Em outra pasta, onde estiver o `kc.bat`:
 
-Na pasta `fastapi-recepcao`:
+# .\kc.bat start-dev --http-port=8080
 
-docker compose up --build
+# Deixar o Keycloak rodando em `http://localhost:8080`.
 
-- MySQL (porta externa `3307`)  
-- Backend (FastAPI em `http://localhost:8000`)  
-- Frontend (em `http://localhost:5173`)
+# ### 6.5. Subir a aplicação
 
-### 6.6. Como acessar
+# Na pasta `fastapi-recepcao`:
 
-- **Frontend (aplicação):**  
-  `http://localhost:5173`
+# docker compose up --build
 
-- **Backend (Swagger / documentação da API):**  
-  `http://localhost:8000/docs`
+# - MySQL (porta externa `3307`)  
+# - Backend (FastAPI em `http://localhost:8000`)  
+# - Frontend (em `http://localhost:5173`)
 
-- **Banco de dados (se quiser acessar por uma ferramenta):**  
-  - Host: `localhost`  
-  - Porta: `3307`  
-  - Usuário: valor de `DB_USER`  
-  - Senha: valor de `DB_PASSWORD`  
-  - Banco: valor de `DB_NAME`
+# ### 6.6. Como acessar
 
-## 7. Rodar sem Docker (opcional, para desenvolvimento)
+# - **Frontend (aplicação):**  
+#   `http://localhost:5173`
 
-### 7.1. Backend
+# - **Backend (Swagger / documentação da API):**  
+#   `http://localhost:8000/docs`
 
-1. Entrar na pasta:
+# - **Banco de dados (se quiser acessar por uma ferramenta):**  
+#   - Host: `localhost`  
+#   - Porta: `3307`  
+#   - Usuário: valor de `DB_USER`  
+#   - Senha: valor de `DB_PASSWORD`  
+#   - Banco: valor de `DB_NAME`
 
-cd fastapi-recepcao/backend
+# ## 7. Rodar sem Docker (opcional, para desenvolvimento)
 
-2. (Opcional) Criar ambiente virtual:
+# ### 7.1. Backend
 
-python -m venv .venv
-..venv\Scripts\activate # Windows
+# 1. Entrar na pasta:
 
-source .venv/bin/activate # Linux/Mac
+# cd fastapi-recepcao/backend
 
-3. Instalar dependências:
+# 2. (Opcional) Criar ambiente virtual:
 
-pip install -r requirements.txt
+# python -m venv .venv
+# ..venv\Scripts\activate # Windows
 
-4. Configurar `.env` (pode usar `DB_HOST=localhost` e `DB_PORT=3307` se usar o MySQL do Docker).
+# source .venv/bin/activate # Linux/Mac
 
-5. Rodar o servidor:
+# 3. Instalar dependências:
 
-uvicorn backend.main:app --reload
+# pip install -r requirements.txt
 
-6. Acessar: `http://127.0.0.1:8000/docs`
+# 4. Configurar `.env` (pode usar `DB_HOST=localhost` e `DB_PORT=3307` se usar o MySQL do Docker).
 
-### 7.2. Frontend
+# 5. Rodar o servidor:
 
-1. Entrar na pasta:
+# uvicorn backend.main:app --reload
 
-cd fastapi-recepcao/frontend
+# 6. Acessar: `http://127.0.0.1:8000/docs`
 
-2. Instalar dependências:
+# ### 7.2. Frontend
 
-npm install # ou yarn
+# 1. Entrar na pasta:
 
-3. Configurar `.env` do frontend com:
+# cd fastapi-recepcao/frontend
 
-VITE_KEYCLOAK_URL=http://localhost:8080
-VITE_KEYCLOAK_REALM=seu_realm
-VITE_KEYCLOAK_CLIENT_ID=seu_client_id
-VITE_API_BASE_URL=http://localhost:8000
+# 2. Instalar dependências:
 
-4. Rodar:
+# npm install # ou yarn
 
-npm run dev -- --host 0.0.0.0 --port 5173
+# 3. Configurar `.env` do frontend com:
 
-5. Acessar: `http://localhost:5173
-## 8. Observações finais
+# VITE_KEYCLOAK_URL=http://localhost:8080
+# VITE_KEYCLOAK_REALM=seu_realm
+# VITE_KEYCLOAK_CLIENT_ID=seu_client_id
+# VITE_API_BASE_URL=http://localhost:8000
 
-- Este projeto é um **MVP** para testes internos do sistema de recepção do IFRJ.  
-- O pacote **tzdata** é importante para tratar fuso horário corretamente (especialmente em Docker).  
-- Para testar fluxos autenticados, o **Keycloak deve estar rodando**.
+# 4. Rodar:
+
+# npm run dev -- --host 0.0.0.0 --port 5173
+
+# 5. Acessar: `http://localhost:5173
+# ## 8. Observações finais
+
+# - Este projeto é um **MVP** para testes internos do sistema de recepção do IFRJ.  
+# - O pacote **tzdata** é importante para tratar fuso horário corretamente (especialmente em Docker).  
+# - Para testar fluxos autenticados, o **Keycloak deve estar rodando**.
