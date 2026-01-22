@@ -17,6 +17,10 @@ app = FastAPI(
     version="1.0.0",
 )
 
+@app.on_event("startup")
+async def on_startup():
+    # Cria as tabelas no banco de dados (se não existirem)
+    models.Base.metadata.create_all(bind=engine)
 @app.post("/token")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     return {"access_token": form_data.username, "token_type": "bearer"}
@@ -35,8 +39,6 @@ app.include_router(visitas_router)
 app.include_router(visitantes_router)
 
 
-# Cria as tabelas no banco de dados (se não existirem)
-models.Base.metadata.create_all(bind=engine)
 
 #Botar em variável de ambiente depois
 raw_origins = os.getenv("origins", "")
