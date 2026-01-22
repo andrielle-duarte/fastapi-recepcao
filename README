@@ -67,25 +67,25 @@
 
 # Crie um arquivo `.env` **na raiz do projeto** (`fastapi-recepcao/.env`) com o seguinte conteúdo (ajuste valores):
 
-# Banco de dados (usado pelo Docker)
-# DB_USER=ifrj_recepcao
-# DB_PASSWORD=teste123
-# DB_HOST=localhost
-# DB_PORT=3306
-# DB_NAME=recepcao
+#Configuração do Banco de Dados
+DB_USER=recepcao_user
+DB_PASSWORD=s3nh4d3t3st3
+DB_HOST=mysql
+DB_PORT=3306
+DB_NAME=recepcao
+MYSQL_ROOT_PASSWORD=s3nh4d3t3t3st3
 
-# Segurança / JWT
-# SECRET_KEY=uma_chave_secreta_bem_grande_e_dificil
+SECRET_KEY=
 
-# Keycloak (backend)
-# KEYCLOAK_URL=https://acesso.dev.ifrj.edu.br
-# KEYCLOAK_REALM=master
-# CLIENT_ID=recepcao-frontend
 
-# Keycloak (frontend)
-# VITE_KEYCLOAK_URL=https://acesso.dev.ifrj.edu.br
-# VITE_KEYCLOAK_REALM=master
-# VITE_KEYCLOAK_CLIENT_ID=recepcao-frontend
+
+KEYCLOAK_URL=https://acesso.dev.ifrj.edu.br
+KEYCLOAK_REALM=master
+CLIENT_ID=recepcao-frontend
+
+VITE_KEYCLOAK_URL=https://acesso.dev.ifrj.edu.br
+VITE_KEYCLOAK_REALM=master
+VITE_KEYCLOAK_CLIENT_ID=recepcao-frontend
 
 # > Observação:  
 # > - O **MySQL** roda dentro do container na porta interna `3306` e é exposto em `localhost:3307`.  

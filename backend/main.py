@@ -21,6 +21,7 @@ app = FastAPI(
 async def on_startup():
     # Cria as tabelas no banco de dados (se não existirem)
     models.Base.metadata.create_all(bind=engine)
+    
 @app.post("/token")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     return {"access_token": form_data.username, "token_type": "bearer"}
