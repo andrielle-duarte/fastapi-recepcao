@@ -21,13 +21,6 @@
 # - FastAPI, SQLAlchemy, Pydantic, Uvicorn  
 # - python-dotenv, Requests, tzdata  
 
-# # # #Dependência ecdsa 0.19.1  é afetado pela CVE‑2024‑23342 (ataque de timing Minerva em curvas P‑256) 
-# # # #permitindo potencial vazamento de chaves privadas em cenários de alta precisão de medição de tempo
-# # # #CVE‑2024‑23342 e que não há patch disponível.
-# # # # Ele é dependência direta de:
-# # # # fastapi_keycloak
-# # # # python-jose
-
 ###### Manter algoritmo de assinatura do access token é RS256 e não ES256.
 
 
@@ -67,7 +60,7 @@
 
 # Crie um arquivo `.env` **na raiz do projeto** (`fastapi-recepcao/.env`) com o seguinte conteúdo (ajuste valores):
 
-#Configuração do Banco de Dados
+<!-- #Configuração do Banco de Dados
 DB_USER=recepcao_user
 DB_PASSWORD=s3nh4d3t3st3
 DB_HOST=mysql
@@ -85,7 +78,7 @@ CLIENT_ID=recepcao-frontend
 
 VITE_KEYCLOAK_URL=https://acesso.dev.ifrj.edu.br
 VITE_KEYCLOAK_REALM=master
-VITE_KEYCLOAK_CLIENT_ID=recepcao-frontend
+VITE_KEYCLOAK_CLIENT_ID=recepcao-frontend -->
 
 # > Observação:  
 # > - O **MySQL** roda dentro do container na porta interna `3306` e é exposto em `localhost:3307`.  
@@ -95,77 +88,84 @@ VITE_KEYCLOAK_CLIENT_ID=recepcao-frontend
 
 # Este arquivo já está na raiz do projeto. Ele sobe **MySQL**, **backend** e **frontend**:
 
-# services:
-# mysql:
-# image: mysql:8.0
-# container_name: mysql
-# restart: always
-# environment:
-# MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-# MYSQL_DATABASE: ${DB_NAME}
-# MYSQL_USER: ${DB_USER}
-# MYSQL_PASSWORD: ${DB_PASSWORD}
-# ports:
-# - "3307:3306"
-# volumes:
-# - mysql_data:/var/lib/mysql
-# healthcheck:
-# test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${DB_USER} -p${DB_PASSWORD} || exit 1"]
-# interval: 10s
-# timeout: 5s
-# retries: 10
-# start_period: 40s
+<!-- services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -p${DB_PASSWORD} --silent || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+ 
+    
+  backend:
+    build: ./backend
+    env_file:
+      - .env
+    container_name: backend
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      KEYCLOAK_URL: ${KEYCLOAK_URL}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      CLIENT_ID: ${CLIENT_ID}
+      PYTHONPATH: /app
+    volumes:
+      - ./backend:/app/backend
+    working_dir: /app/backend
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
 
-# backend:
-# build: ./backend
-# container_name: backend
-# restart: always
-# depends_on:
-# mysql:
-# condition: service_healthy
-# environment:
-# DB_USER: ${DB_USER}
-# DB_PASSWORD: ${DB_PASSWORD}
-# DB_NAME: ${DB_NAME}
-# DB_HOST: mysql
-# DB_PORT: ${DB_PORT}
-# KEYCLOAK_URL: ${KEYCLOAK_URL}
-# KEYCLOAK_REALM: ${KEYCLOAK_REALM}
-# CLIENT_ID: ${CLIENT_ID}
-# PYTHONPATH: /app
-# volumes:
-# - ./backend:/app/backend
-# working_dir: /app/backend
-# command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
-# ports:
-# - "8000:8000"
 
-# frontend:
-# build: ./frontend
-# container_name: frontend
-# restart: always
-# depends_on:
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    restart: always
+    depends_on:
+      - backend
+    environment:
+      VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
+      VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
+      VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
+      VITE_API_BASE_URL: http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    working_dir: /app
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    ports:
+      - "5173:5173"
 
-# - backend
-# environment:
-# VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
-# VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
-# VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
-# VITE_API_BASE_URL: http://backend:8000
-# volumes:
-# - ./frontend:/app
-# - /app/node_modules
-# working_dir: /app
-# command: npm run dev -- --host 0.0.0.0 --port 5173
-# ports:
-# - "5173:5173"
-# volumes:
-# mysql_data:
+volumes:
+  mysql_data: -->
+
 
 # ## 6. Passo a passo para rodar o projeto com Docker (para o chefe)
 
 # ### 6.1. Pré‑requisitos
 
+# - GIT
 # - Docker instalado  
 # - Docker Compose (já vem com o Docker Desktop)
 
@@ -173,12 +173,21 @@ VITE_KEYCLOAK_CLIENT_ID=recepcao-frontend
 
 # git clone https://github.com/andrielle-duarte/fastapi-recepcao.git
 # cd fastapi-recepcao
+# git clone https://github.com/andrielle-duarte/frontend.git
 
-# ### 6.3. Criar o `.env`
+
+# ### 6.3.0 Rodar o pip-audit (verificar se há vulnerabilidades)
+
+
+# ### 6.3.1 Criar o `.env`
 
 # Criar o arquivo `.env` na raiz, copiando o exemplo da seção **4**.
 
-# ### 6.4. Iniciar o Keycloak
+# ### 6.4. Iniciar o Keycloak *com docker*
+
+# - Keycloak já deve estar configurado com parametros de CLIENT, REALM, URL. 
+
+# ### 6.4.1 Iniciar o Keycloak *sem docker*
 
 # Em outra pasta, onde estiver o `kc.bat`:
 
